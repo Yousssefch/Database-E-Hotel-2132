@@ -1,17 +1,17 @@
 import React from "react";
 import Logo from "../../../assets/global/Logo.png";
-import LogInImage from "../../../assets/LoginPage/LogInImage.png";
-import "./LoginPage.css";
+import SignUpImage from "../../../assets/SignUpPage/SignUpImage.png";
+import "./SignUpPage.css";
 
-const LoginPage: React.FC = () => {
+const SignUpPage: React.FC = () => {
   return (
     <div className="login-container">
       {/* Left Side - Login Form */}
       <div className="login-form">
         <img src={Logo.src} alt="E Hotel Logo" className="logo" />
-        <h1 className="welcome-text">Welcome Back</h1>
+        <h1 className="welcome-text">Register</h1>
         <p className="subtext">
-          The faster you fill up, the faster you’ll be able to travel!
+          Don't have an account? Register now to enjoy seamless check-ins
         </p>
         <form className="form-container">
           <label className="label">Full Name:</label>
@@ -26,14 +26,28 @@ const LoginPage: React.FC = () => {
             className="input-field"
             placeholder="Enter your ID"
           />
-          <button className="submit-button">Log in</button>
+          <label className="label">Address:</label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="Enter your ID"
+          />
+
+          <label className="label">Customer/Employee:</label>
+          <select name="Customer/Employee" id="Customer/Employee" className="customer-select">
+            <option value="Customer">Customer</option>
+            <option value="Employee">Employee</option>
+          </select>
+
+          <button className="submit-button">Register</button>
+
         </form>
       </div>
       
       {/* Right Side - Image */}
       <div className="image-container">
         <img
-          src={LogInImage.src}
+          src={SignUpImage.src}
           alt="Hotel Pool"
           className="login-image"
         />
@@ -42,4 +56,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;
