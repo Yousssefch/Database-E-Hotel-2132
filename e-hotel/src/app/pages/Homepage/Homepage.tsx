@@ -1,3 +1,4 @@
+import Hero from "@/app/components/global/Homepage/Hero"
 import "./Homepage.css"
 import NavBar from "@/app/components/global/Navbar"
 export default function Homepage(){
@@ -6,6 +7,7 @@ export default function Homepage(){
 
             {/* NavBar */}
             <NavBar />
+            <Hero />
             
         </div>
     )
