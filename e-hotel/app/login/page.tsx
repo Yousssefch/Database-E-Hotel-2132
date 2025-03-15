@@ -1,26 +1,24 @@
 import React from "react";
-import Logo from "../../../assets/global/Logo.png";
-import LogInImage from "../../../assets/LoginPage/LogInImage.png";
-import "./LoginPage.css";
+import "../login/LoginPage.css";
 
 const LoginPage: React.FC = () => {
   return (
-    <div className="login-container">
+    <div className="login-container text-black">
       {/* Left Side - Login Form */}
       <div className="login-form">
-        <img src={Logo.src} alt="E Hotel Logo" className="logo" />
-        <h1 className="welcome-text">Welcome Back</h1>
+        <img src="images/Logo.png" alt="E Hotel Logo" className="h-32" />
+        <h1 className="welcome-text ">Welcome Back</h1>
         <p className="subtext">
           The faster you fill up, the faster you’ll be able to travel!
         </p>
-        <form className="form-container">
+        <form className="form-container ">
           <label className="label">Full Name:</label>
           <input
             type="text"
             className="input-field"
             placeholder="Enter your full name"
           />
-          <label className="label">ID (SSN/SIN):</label>
+          <label className="label text-black">ID (SSN/SIN):</label>
           <input
             type="text"
             className="input-field"
@@ -29,11 +27,11 @@ const LoginPage: React.FC = () => {
           <button className="submit-button">Log in</button>
         </form>
       </div>
-      
+
       {/* Right Side - Image */}
       <div className="image-container">
         <img
-          src={LogInImage.src}
+          src="images/LogInImage.png"
           alt="Hotel Pool"
           className="login-image"
         />

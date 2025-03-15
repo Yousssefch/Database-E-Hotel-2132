@@ -1,14 +1,12 @@
 import React from "react";
-import Logo from "../../../assets/global/Logo.png";
-import SignUpImage from "../../../assets/SignUpPage/SignUpImage.png";
 import "./SignUpPage.css";
 
 const SignUpPage: React.FC = () => {
   return (
-    <div className="login-container">
+    <div className="login-container text-black">
       {/* Left Side - Login Form */}
       <div className="login-form">
-        <img src={Logo.src} alt="E Hotel Logo" className="logo" />
+        <img src="images/Logo.png" alt="E Hotel Logo" className="logo" />
         <h1 className="welcome-text">Register</h1>
         <p className="subtext">
           Don't have an account? Register now to enjoy seamless check-ins
@@ -34,20 +32,23 @@ const SignUpPage: React.FC = () => {
           />
 
           <label className="label">Customer/Employee:</label>
-          <select name="Customer/Employee" id="Customer/Employee" className="customer-select">
+          <select
+            name="Customer/Employee"
+            id="Customer/Employee"
+            className="customer-select"
+          >
             <option value="Customer">Customer</option>
             <option value="Employee">Employee</option>
           </select>
 
           <button className="submit-button">Register</button>
-
         </form>
       </div>
-      
+
       {/* Right Side - Image */}
       <div className="image-container">
         <img
-          src={SignUpImage.src}
+          src="images/SignUpImage.png"
           alt="Hotel Pool"
           className="login-image"
         />
