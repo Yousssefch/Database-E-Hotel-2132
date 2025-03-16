@@ -1,0 +1,30 @@
+.hotelcard-rating-container {
+    width: 50px; 
+    height: 20px; 
+    position: absolute;
+    top: 10px; 
+    left: 10px; 
+    background-color: black;
+    opacity: 0.8;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: azure;
+    padding: 3px 8px; 
+    gap: 5px; 
+}
+
+.hotelcard-rating-text {
+    font-size: 12px; /* Slightly bigger for better visibility */
+    font-weight: bold;
+}
+.homepage-input{
+    background-color: rgb(231, 231, 231);
+    width: 80vw;
+    margin-top: 10px;
+    margin-bottom: 10px ;
+    border-radius: 20px;
+    border: 0px;
+    box-shadow: 0.2px #b2b2b2;
+}
