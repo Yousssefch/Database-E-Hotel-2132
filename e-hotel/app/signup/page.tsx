@@ -1,6 +1,7 @@
 import React from "react";
 import "./SignUpPage.css";
 
+
 const SignUpPage: React.FC = () => {
   return (
     <div className="login-container text-black">

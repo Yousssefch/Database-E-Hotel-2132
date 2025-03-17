@@ -1,3 +1,4 @@
+
 .login-container {
     display: flex;
     flex-direction: row-reverse;
@@ -17,12 +18,11 @@
   .logo {
     width: 4rem;
     margin-bottom: 1.5rem;
-    position: absolute;
   }
   
   .welcome-text {
-    font-size: 1.875rem;
-    font-family: "Old Standard TT";
+    font-size: 1.5rem;
+    font-family: "Poppins";
     font-weight: bold;
   }
   
