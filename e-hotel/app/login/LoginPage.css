@@ -14,13 +14,13 @@
   }
   
   .logo {
-    width: 4rem;
+    width: 10%;
     margin-bottom: 1.5rem;
   }
   
   .welcome-text {
-    font-size: 1.875rem;
-    font-family: "Old Standard TT";
+    font-size: 1.5rem;
+    font-family: "Poppins";
     font-weight: bold;
   }
   

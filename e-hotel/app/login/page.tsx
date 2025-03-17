@@ -6,13 +6,13 @@ const LoginPage: React.FC = () => {
     <div className="login-container text-black">
       {/* Left Side - Login Form */}
       <div className="login-form">
-        <img src="images/Logo.png" alt="E Hotel Logo" className="h-32" />
+        <img src="images/Logo.png" alt="E Hotel Logo" className="logo" />
         <h1 className="welcome-text ">Welcome Back</h1>
         <p className="subtext">
           The faster you fill up, the faster you’ll be able to travel!
         </p>
         <form className="form-container ">
-          <label className="label">Full Name:</label>
+          <label className="label text-black">Full Name:</label>
           <input
             type="text"
             className="input-field"
