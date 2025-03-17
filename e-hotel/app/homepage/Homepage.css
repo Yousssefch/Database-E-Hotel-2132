@@ -61,3 +61,15 @@
     background-color: black;
     opacity: 0.5;
 }
+.homepage-sort-container{
+    align-items: center;
+    align-self: center;
+    justify-self: center;
+    width: fit-content;
+}
+.homepage-sort{
+    background-color: rgb(232, 232, 232);
+    color: #313030;
+    color-scheme: black;
+    width: 40%;
+}
