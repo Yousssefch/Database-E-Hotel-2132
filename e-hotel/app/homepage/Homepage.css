@@ -1,0 +1,63 @@
+.homepage-container{
+    display: flex;
+}
+.Text{
+    color: brown;
+}
+.homepage-top-right-container{
+    position: relative;
+    width: 50%;
+    height: 250px;
+    align-self: center;
+    justify-self: center;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.homepage-top-right-image{
+    width: 100vw;
+    height: 250px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+.homepage-image-overlay{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: #000000;
+    top: 0;
+    border-radius: 10px;
+    opacity: 0.3;
+  }
+  .homepage-image-text-overlay{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    border-radius: 10px;
+  }
+  .homepage-image-overlay-text{
+    position: absolute;
+    top: 80%;
+    margin-left: 10px;
+    font-family: "Poppins";
+    font-weight: 500;
+    color: white;
+    font-size: larger;
+
+  }
+  .homepage-hotel-text-title{
+    font-weight: bolder;
+    font-size: 20px;
+  }
+  .homepage-hotel-text-subtitle{
+    font-weight: lighter;
+    font-size: 10px;
+    color: gray;
+  }
+  .hotel-information-overlay{
+    position: absolute;
+    width: 100vw;
+    height:  100vh;
+    background-color: black;
+    opacity: 0.5;
+}
