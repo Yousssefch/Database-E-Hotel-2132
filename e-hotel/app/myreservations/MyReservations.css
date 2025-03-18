@@ -1,0 +1,35 @@
+.my-reservations-container{
+    display: flex;
+    flex-direction: row;
+}
+.my-reservations-right-container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    margin-top: 3%;
+}
+.my-reservations-right-top-title{
+    font-family: "Poppins";
+    font-weight: bolder;
+    font-size: 1.2rem;
+}
+.my-reservations-right-top-subtitle{
+    font-weight: 100;
+    font-size: 0.7rem;
+}
+.my-reservations-right-top-bar{
+    width: 10%;
+    height: 5px;
+    background-color: rgb(208, 208, 208);
+    justify-self: center;
+    border-radius: 10px;
+    margin-top: 50px;
+}
+.my-reservations-right-image{
+    width: 15%;
+}
+.my-reservations-image-container{
+    display: flex;
+    justify-content: center;
+}
