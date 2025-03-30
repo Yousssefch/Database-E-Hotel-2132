@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model HotelChain {
+  id                  Int     @id @default(autoincrement())
+  name                String
+  centralOfficeAddress String
+  numberOfHotels      Int
+  contactEmail        String
+  phoneNumber         String
+  hotels              Hotel[]
+}
+
+model Hotel {
+  id            Int     @id @default(autoincrement())
+  hotelChainId  Int
+  name          String
+  rating        Int
+  numberOfRooms Int
+  address       String
+  contactEmail  String
+  phoneNumber   String
+  urlImage      String
+  hotelChain    HotelChain @relation(fields: [hotelChainId], references: [id])
+  rooms         Room[]
+  employees     Employee[]
+}
+
+model Room {
+  id          Int     @id @default(autoincrement())
+  hotelId     Int
+  name        String
+  price       Float
+  amenities   String
+  capacity    Int
+  viewType    String
+  extendable  Boolean
+  problems    String?
+  hotel       Hotel   @relation(fields: [hotelId], references: [id])
+  bookings    Booking[]
+  rentings    Renting[]
+}
+
+model Customer {
+  ssn_sin         String @id
+  fullName        String
+  address         String
+  registrationDate DateTime
+  profilePictureURL String
+  bookings        Booking[]
+  rentings        Renting[]
+}
+
+model Employee {
+  id         Int    @id @default(autoincrement())
+  hotelId    Int
+  fullName   String
+  address    String
+  ssn_sin    String
+  role       String
+  hotel      Hotel  @relation(fields: [hotelId], references: [id])
+  rentings   Renting[]
+}
+
+model Booking {
+  id             Int      @id @default(autoincrement())
+  customerSsnSin String
+  roomId         Int
+  bookingDate    DateTime
+  checkInDate    DateTime
+  checkOutDate   DateTime
+  status         String
+  customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
+  room           Room     @relation(fields: [roomId], references: [id])
+  renting        Renting?
+}
+
+model Renting {
+  id             Int      @id @default(autoincrement())
+  bookingId      Int?     @unique
+  customerSsnSin String
+  roomId         Int
+  employeeId     Int
+  checkInDate    DateTime
+  booking        Booking? @relation(fields: [bookingId], references: [id])
+  customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
+  room           Room     @relation(fields: [roomId], references: [id])
+  employee       Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Archives {
+  id               Int      @id @default(autoincrement())
+  bookingRentingId Int
+  transactionType  String
+  customerInfo     String
+  roomInfo         String
+  checkInDate      DateTime
+  checkOutDate     DateTime
+}
