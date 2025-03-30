@@ -1,20 +1,22 @@
-generator client {
-  provider = "prisma-client-js"
-}
+// Updated Prisma Schema with Hotel → Manager relation
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model HotelChain {
-  id                  Int     @id @default(autoincrement())
-  name                String
-  centralOfficeAddress String
-  numberOfHotels      Int
-  contactEmail        String
-  phoneNumber         String
-  hotels              Hotel[]
+  id                    Int     @id @default(autoincrement())
+  name                  String
+  centralOfficeAddress  String
+  numberOfHotels        Int
+  contactEmail          String
+  phoneNumber           String
+  hotels                Hotel[]
 }
 
 model Hotel {
@@ -27,9 +29,12 @@ model Hotel {
   contactEmail  String
   phoneNumber   String
   urlImage      String
+
   hotelChain    HotelChain @relation(fields: [hotelChainId], references: [id])
   rooms         Room[]
   employees     Employee[]
+  managerId     Int     @unique
+  manager       Employee @relation("HotelManager", fields: [managerId], references: [id])
 }
 
 model Room {
@@ -42,6 +47,7 @@ model Room {
   viewType    String
   extendable  Boolean
   problems    String?
+
   hotel       Hotel   @relation(fields: [hotelId], references: [id])
   bookings    Booking[]
   rentings    Renting[]
@@ -53,6 +59,7 @@ model Customer {
   address         String
   registrationDate DateTime
   profilePictureURL String
+
   bookings        Booking[]
   rentings        Renting[]
 }
@@ -64,8 +71,10 @@ model Employee {
   address    String
   ssn_sin    String
   role       String
+
   hotel      Hotel  @relation(fields: [hotelId], references: [id])
   rentings   Renting[]
+  managedHotels Hotel[] @relation("HotelManager")
 }
 
 model Booking {
@@ -76,6 +85,7 @@ model Booking {
   checkInDate    DateTime
   checkOutDate   DateTime
   status         String
+
   customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
   room           Room     @relation(fields: [roomId], references: [id])
   renting        Renting?
@@ -88,6 +98,8 @@ model Renting {
   roomId         Int
   employeeId     Int
   checkInDate    DateTime
+  checkOutDate   DateTime
+
   booking        Booking? @relation(fields: [bookingId], references: [id])
   customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
   room           Room     @relation(fields: [roomId], references: [id])
@@ -103,3 +115,4 @@ model Archives {
   checkInDate      DateTime
   checkOutDate     DateTime
 }
+
