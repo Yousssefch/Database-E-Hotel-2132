@@ -1,15 +1,87 @@
+'use client';
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import "./Homepage.css"
 import Navbar from "@/app/components/global/Navbar"
 import topImage from "../../../assets/Homepage/homepage_image.png"
 import HotelCard from "../components/homepage/HotelCard";
 import HotelInformation from "../components/homepage/HotelInformation";
 
+interface User {
+    name: string;
+    ssn_sin: string;
+    address: string;
+    date_of_registration: string;
+}
+
 const Homepage: React.FC = () =>  {
+    const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/auth/check-auth', {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    router.push('/login');
+                    return;
+                }
+                
+                setUser(data.user);
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                router.push('/login');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkAuth();
+    }, [router]);
+
+    if (isLoading) {
+        return (
+            <div className="homepage-container bg-white">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return null;
+    }
+
     return(
         <div className= "homepage-container bg-white">
             <Navbar />
             
             <div className="homepage-right-container">
+                {/* User Welcome Section */}
+                <div className="welcome-section p-4 bg-gray-100 rounded-lg mb-4 shadow-md">
+                    <h2 className="text-xl font-semibold text-gray-800">Welcome, {user.name}!</h2>
+                    <div className="mt-2 space-y-1">
+                        <p className="text-gray-600">SSN/SIN: {user.ssn_sin}</p>
+                        <p className="text-gray-600">Address: {user.address}</p>
+                        <p className="text-gray-600">Member since: {new Date(user.date_of_registration).toLocaleDateString()}</p>
+                    </div>
+                </div>
                 
                 {/* Top Welcoming design :-( */}
                 <div className="homepage-top-right-container">

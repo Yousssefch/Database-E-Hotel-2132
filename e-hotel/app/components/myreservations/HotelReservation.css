@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap');
-.hotel-reservation-container{
+
+.hotel-reservation-container {
     width: 500px;
     height: 150px;
     display: flex;
@@ -8,56 +9,63 @@
     border-radius: 10px;
     box-shadow: 1px 1px 0px rgb(199, 199, 199);
     border: 1px solid rgb(217, 217, 217);
-    
+    position: relative;
+    overflow: hidden;
 }
-.hotel-reservation-image-container{
+
+.hotel-reservation-image-container {
     height: 100%;
     width: 40%;
-    background-color: aqua;
     border-radius: 10px;
     position: relative;
 }
-.hotel-reservation-image{
+
+.hotel-reservation-image {
     border-radius: 10px;
     border: 1px solid rgb(163, 163, 163);
-
-
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
-.hotel-reservation-overlay{
+
+.hotel-reservation-overlay {
     position: absolute;
     background-color: black;
     opacity: 0.3;
     width: 100%;
     height: 100%;
     top: 0;
+    left: 0;
     border-radius: 10px;
 }
-.hotel-overlay-text-title{
+
+.hotel-overlay-text-title {
     position: absolute;
     bottom: 10px;
     left: 10px;
+    color: white;
 }
-.hotel-reservation-text-from-container{
+
+.hotel-reservation-text-from-container {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
     width: 100%;
     color: black;
-    
 }
 
-.hotel-reservation-text-from-title{
+.hotel-reservation-text-from-title {
     font-size: 12px;
     font-weight: bolder;
     margin-top: 10px;
-    
 }
-.hotel-reservation-text-from-subtitle{
+
+.hotel-reservation-text-from-subtitle {
     font-size: 10px;
 }
 
-.hotel-reservation-text-container{
+.hotel-reservation-text-container {
     display: flex;
     flex-direction: column;
     width: 60%;
@@ -65,10 +73,68 @@
     padding: 5px;
 }
 
-.hotel-reservation-text-hotel-name{
+.hotel-reservation-text-hotel-name {
     color: black;
     font-weight: bold;
     font-size: 15px;
     letter-spacing: 1px;
     font-family: 'Poppins';
+}
+
+.hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    z-index: 10;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    color: white;
+    text-align: center;
+}
+
+.hotel-reservation-container:hover .hover-overlay {
+    opacity: 1;
+}
+
+.overlay-text {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.overlay-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.overlay-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.overlay-button.approve {
+    background-color: green;
+}
+
+.overlay-button.cancel {
+}
+
+.overlay-button:hover {
+    background-color: white;
+    color: black;
 }
