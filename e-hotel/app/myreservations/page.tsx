@@ -57,13 +57,24 @@ const MyReservations: React.FC = () =>{
                 
                 const allBookings = await response.json();
                 
-                // Filter bookings by the logged-in user
+                // Filter bookings by the logged-in user (show all statuses)
                 const userSsnSin = authData.user.ssn_sin;
                 const userBookings = allBookings.filter((booking: Booking) => 
                     booking.customerSsnSin === userSsnSin
                 );
                 
-                console.log("User bookings:", userBookings);
+                // Group bookings by status for logging
+                const confirmedBookings = userBookings.filter((b: Booking) => b.status === "confirmed");
+                const pendingBookings = userBookings.filter((b: Booking) => b.status === "pending");
+                const declinedBookings = userBookings.filter((b: Booking) => b.status === "declined");
+                const cancelledBookings = userBookings.filter((b: Booking) => b.status === "cancelled");
+                
+                console.log("All user reservations:", userBookings.length);
+                console.log("Confirmed reservations:", confirmedBookings.length);
+                console.log("Pending reservations:", pendingBookings.length);
+                console.log("Declined reservations:", declinedBookings.length);
+                console.log("Cancelled reservations:", cancelledBookings.length);
+                
                 setBookings(userBookings);
             } catch (error) {
                 console.error("Error fetching bookings:", error);
@@ -107,7 +118,7 @@ const MyReservations: React.FC = () =>{
                         </a>
                     </div>
                 ) : (
-                    <div className="my-reservations-cards-container">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
                         {bookings.map((booking) => (
                             <HotelReservation 
                                 key={booking.id}

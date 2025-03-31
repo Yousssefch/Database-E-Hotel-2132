@@ -1,0 +1,97 @@
+.admin-page-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 220px;
+  max-width: calc(100% - 220px);
+}
+
+.admin-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.admin-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.admin-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  font-weight: normal;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-content {
+    margin-left: 0;
+    max-width: 100%;
+    padding: 1rem;
+  }
+  
+  .admin-title {
+    font-size: 1.5rem;
+  }
+  
+  .admin-subtitle {
+    font-size: 1rem;
+  }
+  
+  .admin-page-container {
+    flex-direction: column;
+  }
+}
+
+/* Table styling enhancements */
+.overflow-x-auto {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+/* Animation for status changes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Button animations */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+} 
