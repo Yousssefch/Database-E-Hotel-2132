@@ -88,7 +88,7 @@ const NavBarTop = () => {
           </div>
         ) : (
           <button
-            className="btn btn-primary hover: scale-95 btn-sm px-4 mx-6 rounded-xl"
+            className="btn btn-primary hover: scale-95 btn-md px-4 mx-6 rounded-xl"
             onClick={() => router.push("/login")}
           >
             Login

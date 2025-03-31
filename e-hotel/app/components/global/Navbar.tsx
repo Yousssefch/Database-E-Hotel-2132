@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import "./Navbar.css";
@@ -12,37 +12,37 @@ const Navbar: React.FC = () => {
     const checkUserRole = async () => {
       try {
         setIsLoading(true);
-        
+
         // Check the authentication status from the client side
-        const response = await fetch('/api/auth/check-auth', {
-          credentials: 'include',
+        const response = await fetch("/api/auth/check-auth", {
+          credentials: "include",
         });
-        
+
         if (!response.ok) {
-          console.error('Authentication check failed in navbar');
+          console.error("Authentication check failed in navbar");
           setIsEmployee(false);
           return;
         }
-        
+
         const data = await response.json();
-        console.log('Auth data in navbar:', data);
-        
+        console.log("Auth data in navbar:", data);
+
         // Update employee status based on response
-        setIsEmployee(data.authenticated && data.userType === 'employee');
+        setIsEmployee(data.authenticated && data.userType === "employee");
       } catch (error) {
-        console.error('Error checking user role:', error);
+        console.error("Error checking user role:", error);
         setIsEmployee(false);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     checkUserRole();
   }, []);
 
   return (
-    <div className="navbar-container">
-      <div className="navbar">
+    <div className="navbar-container ">
+      <div className="navbar min-h-screen ">
         <a href="/" className="justify-center flex">
           <img src="images/Logo.png" className="navbar-img-logo" />
         </a>
@@ -77,8 +77,6 @@ const Navbar: React.FC = () => {
             </svg>
             <span className="navbar-text">My Reservations</span>
           </a>
-
-
 
           <a href="/myrentings" className="navbar-item">
             <svg

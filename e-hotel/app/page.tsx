@@ -17,11 +17,11 @@ export default function Homepage() {
     "Travel the world with the best hotel platform",
     "Have peace of mind while you travel",
     "Don't worry about anything, we take care of all your needs",
-    "Challenge us and try your favorite hotel/city. We are in contact with the most popular hotels worldwide",
+    "We are in contact with the most popular hotels worldwide",
     "Enjoy your life, we are here to make your experience the most unforgettable moments of your life",
   ];
 
-  const delay = 5000; // Durée d'affichage de chaque slide (en millisecondes)
+  const delay = 4000; // Durée d'affichage de chaque slide (en millisecondes)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,7 +34,7 @@ export default function Homepage() {
   return (
     <>
       <NavBarTop />
-      <div className="relative w-full min-h-screen  overflow-hidden">
+      <div className="relative w-full h-full  overflow-hidden">
         <div className="relative w-full h-full">
           {items.map((item, index) => (
             <div
@@ -58,7 +58,7 @@ export default function Homepage() {
           ))}
         </div>
         {/* login bouttons  */}
-        <div className="flex fixed inset-0 m-auto top-100 gap-20 backdrop-blur-sm p-6 items-center rounded-3xl justify-center w-fit h-fit">
+        <div className="relative flex my-120 m-auto  gap-20 backdrop-blur-sm p-6 items-center rounded-3xl justify-center w-fit h-fit">
           <div className="flex flex-col items-center">
             <span className="text-xl ">Want to give it a try?</span>
             <a href="/signup">

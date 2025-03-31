@@ -90,7 +90,8 @@ export async function GET() {
                         name: customer.fullName,
                         ssn_sin: customer.ssn_sin,
                         address: customer.address,
-                        date_of_registration: customer.registrationDate.toISOString()
+                        date_of_registration: customer.registrationDate.toISOString(),
+                        profilePictureURL : customer.profilePictureURL
                     }
                 });
             }
