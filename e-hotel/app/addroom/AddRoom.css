@@ -1,0 +1,44 @@
+.add-room-page-container {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    min-height: 100vh;
+}
+
+.add-room-content {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.add-room-header {
+    text-align: center;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.add-room-title {
+    font-family: "Poppins";
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.add-room-subtitle {
+    font-family: "Poppins";
+    font-weight: 300;
+    font-size: 1rem;
+    color: #666;
+}
+
+.add-room-form-wrapper {
+    width: 100%;
+    max-width: 800px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+} 

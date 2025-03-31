@@ -1,0 +1,130 @@
+.add-room-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-room-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    background-color: #f3f4f6;
+    width: 100%;
+    color: #000000;
+}
+
+.form-input:focus {
+    outline: none;
+
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+.textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+select.form-input {
+    background-color: white;
+    cursor: pointer;
+}
+
+.submit-button {
+    background-color: #000000;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #333333;
+}
+
+.submit-button:active {
+    background-color: #1a1a1a;
+}
+
+.amenities-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.add-amenity-button {
+    padding: 10px 20px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.add-amenity-button:hover {
+    background-color: #333333;
+}
+
+.amenities-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    color: #000000;
+}
+
+.amenity-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.remove-amenity-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-amenity-button:hover {
+    color: #ef4444;
+} 

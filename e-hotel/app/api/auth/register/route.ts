@@ -1,54 +1,89 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+// Create a new Prisma client instance directly in this file
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
+    console.log('Register API called');
     try {
         const data = await request.json();
-        console.log('Registration data:', data);
+        console.log('Registration data received:', data);
         
-        // Forward the request to the Flask backend
-        const response = await fetch('http://localhost:5000/api/auth/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-
-        // Log the raw response for debugging
-        console.log('Response status:', response.status);
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
-
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Failed to parse response as JSON:', e);
+        // Validate input data
+        if (!data.ssn || !data.name || !data.address) {
+            console.error('Missing required fields');
             return NextResponse.json(
                 { 
                     success: false, 
-                    message: 'Invalid response from server',
-                    details: responseText
+                    message: 'Missing required fields: ssn, name, or address' 
+                },
+                { status: 400 }
+            );
+        }
+        
+        try {
+            console.log('Attempting to create customer with:', {
+                ssn_sin: data.ssn,
+                fullName: data.name,
+                address: data.address
+            });
+            
+            // Use Prisma directly instead of making another API call
+            const customer = await prisma.customer.create({
+                data: {
+                    ssn_sin: data.ssn,
+                    fullName: data.name,
+                    address: data.address,
+                    registrationDate: new Date(),
+                    profilePictureURL: data.profilePicture || 'default_profile.jpg'
+                }
+            });
+            
+            console.log('Customer created successfully:', customer);
+            
+            return NextResponse.json({
+                success: true,
+                message: 'Registration successful',
+                user: customer
+            });
+            
+        } catch (dbError: any) {
+            console.error('Database error details:', {
+                name: dbError?.name,
+                message: dbError?.message,
+                code: dbError?.code,
+                meta: dbError?.meta,
+                stack: dbError?.stack
+            });
+            
+            // Check for duplicate key error
+            if (dbError?.code === 'P2002') {
+                return NextResponse.json(
+                    { 
+                        success: false, 
+                        message: 'A user with this SSN/SIN already exists'
+                    },
+                    { status: 409 }
+                );
+            }
+            
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    message: 'Registration failed',
+                    details: dbError instanceof Error ? dbError.message : String(dbError)
                 },
                 { status: 500 }
             );
         }
+    } catch (error: any) {
+        console.error('Registration error details:', {
+            name: error?.name,
+            message: error?.message,
+            stack: error?.stack
+        });
         
-        if (response.ok) {
-            return NextResponse.json(result);
-        } else {
-            return NextResponse.json(
-                { 
-                    success: false, 
-                    message: result.message || 'Registration failed',
-                    details: result
-                },
-                { status: response.status }
-            );
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
         return NextResponse.json(
             { 
                 success: false, 

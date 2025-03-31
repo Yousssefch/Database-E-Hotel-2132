@@ -8,14 +8,21 @@ const SignUpPage: React.FC = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
-        ssn_sin: '',
-        address: ''
+        ssn: '',
+        address: '',
+        profilePicture: ''
     });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setDebugInfo(null);
+        setIsLoading(true);
+
+        console.log('Submitting form data:', formData);
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -26,15 +33,38 @@ const SignUpPage: React.FC = () => {
                 body: JSON.stringify(formData),
             });
 
-            const data = await response.json();
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
+
+            // Get raw text first to debug potential issues with JSON parsing
+            const responseText = await response.text();
+            console.log('Raw response text:', responseText);
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Error parsing response as JSON:', parseError);
+                setError(`Server returned invalid JSON. Status: ${response.status}`);
+                setDebugInfo({
+                    status: response.status,
+                    responseText: responseText.substring(0, 500) + (responseText.length > 500 ? '...' : '')
+                });
+                return;
+            }
 
             if (data.success) {
                 router.push('/login');
             } else {
                 setError(data.message || 'Registration failed');
+                setDebugInfo(data.details || null);
             }
         } catch (err) {
-            setError('An error occurred during registration');
+            console.error('Registration error:', err);
+            setError('An error occurred during registration. Please try again.');
+            setDebugInfo(err instanceof Error ? { message: err.message, name: err.name } : String(err));
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -69,10 +99,10 @@ const SignUpPage: React.FC = () => {
                     <label className="label">ID (SSN/SIN):</label>
                     <input
                         type="text"
-                        name="ssn_sin"
+                        name="ssn"
                         className="input-field"
-                        placeholder="Enter your ID"
-                        value={formData.ssn_sin}
+                        placeholder="Enter your ID without dashes or spaces"
+                        value={formData.ssn}
                         onChange={handleChange}
                         required
                     />
@@ -86,19 +116,38 @@ const SignUpPage: React.FC = () => {
                         onChange={handleChange}
                         required
                     />
+                    
+                    <label className="label">Profile Picture URL (optional):</label>
+                    <input
+                        type="text"
+                        name="profilePicture"
+                        className="input-field"
+                        placeholder="Enter profile picture URL"
+                        value={formData.profilePicture}
+                        onChange={handleChange}
+                    />
 
-                    <label className="label">Customer/Employee:</label>
-                    <select
-                        name="Customer/Employee"
-                        id="Customer/Employee"
-                        className="customer-select"
+                    {error && (
+                        <div className="text-red-500 text-sm mt-2">
+                            <p>{error}</p>
+                            {debugInfo && (
+                                <details className="mt-2 text-xs">
+                                    <summary>Debug Info</summary>
+                                    <pre className="mt-1 p-2 bg-gray-100 rounded overflow-auto max-h-40">
+                                        {JSON.stringify(debugInfo, null, 2)}
+                                    </pre>
+                                </details>
+                            )}
+                        </div>
+                    )}
+                    
+                    <button 
+                        type="submit" 
+                        className="submit-button"
+                        disabled={isLoading}
                     >
-                        <option value="Customer">Customer</option>
-                        <option value="Employee">Employee</option>
-                    </select>
-
-                    {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-                    <button type="submit" className="submit-button">Register</button>
+                        {isLoading ? 'Registering...' : 'Register'}
+                    </button>
                 </form>
             </div>
 

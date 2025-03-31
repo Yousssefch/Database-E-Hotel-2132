@@ -1,0 +1,80 @@
+.add-hotel-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-hotel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+select.form-input {
+    background-color: white;
+    cursor: pointer;
+}
+
+.submit-button {
+    background-color: #000000;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #333333;
+}
+
+.submit-button:active {
+    background-color: #1a1a1a;
+}
+
+/* Error state */
+.form-input.error {
+    border-color: #ef4444;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+} 

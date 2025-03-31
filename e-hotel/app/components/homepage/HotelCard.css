@@ -19,6 +19,7 @@
     font-size: 12px; /* Slightly bigger for better visibility */
     font-weight: bold;
 }
+
 .homepage-input{
     background-color: rgb(231, 231, 231);
     width: 80vw;
@@ -27,4 +28,38 @@
     border-radius: 20px;
     border: 0px;
     box-shadow: 0.2px #b2b2b2;
+}
+
+.room-dropdown-container {
+    max-height: 300px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    transform-origin: top center;
+    animation: dropdown 0.2s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes dropdown {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.price-tag {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 20;
+    font-size: 14px;
 }

@@ -1,4 +1,4 @@
-// Updated Prisma Schema with Hotel → Manager relation
+// Updated Prisma Schema without Hotel → Manager relation
 
 datasource db {
   provider = "postgresql"
@@ -33,8 +33,6 @@ model Hotel {
   hotelChain    HotelChain @relation(fields: [hotelChainId], references: [id])
   rooms         Room[]
   employees     Employee[]
-  managerId     Int     @unique
-  manager       Employee @relation("HotelManager", fields: [managerId], references: [id])
 }
 
 model Room {
@@ -74,7 +72,6 @@ model Employee {
 
   hotel      Hotel  @relation(fields: [hotelId], references: [id])
   rentings   Renting[]
-  managedHotels Hotel[] @relation("HotelManager")
 }
 
 model Booking {
