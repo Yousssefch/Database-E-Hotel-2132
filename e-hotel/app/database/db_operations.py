@@ -1,4 +1,5 @@
 from .db_connection import get_db_connection, close_db_connection
+import os
 
 def cleanup_database():
     """
@@ -33,6 +34,33 @@ def cleanup_database():
             
         except Exception as error:
             print(f"Error during database cleanup: {error}")
+            connection.rollback()
+        finally:
+            cursor.close()
+            close_db_connection(connection)
+
+def create_indexes():
+    """
+    Create necessary indexes for optimizing database queries
+    """
+    connection = get_db_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            
+            # Read and execute the indexes SQL file
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            indexes_file = os.path.join(current_dir, 'create_indexes.sql')
+            
+            with open(indexes_file, 'r') as file:
+                indexes_sql = file.read()
+                cursor.execute(indexes_sql)
+            
+            connection.commit()
+            print("Database indexes created successfully")
+            
+        except Exception as error:
+            print(f"Error while creating indexes: {error}")
             connection.rollback()
         finally:
             cursor.close()
@@ -110,6 +138,10 @@ def create_tables():
             """)
             
             connection.commit()
+            
+            # Create indexes after tables are created
+            print("Creating database indexes...")
+            create_indexes()
             
             # Verify tables were created
             cursor.execute("""

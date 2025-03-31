@@ -6,6 +6,7 @@ import "./Homepage.css";
 import Navbar from "@/app/components/global/Navbar";
 import HotelCard from "../components/homepage/HotelCard";
 import HotelInformation from "../components/homepage/HotelInformation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface User {
   name: string;
@@ -276,43 +277,33 @@ const Homepage: React.FC = () => {
 
       <div className="homepage-right-container">
         {/* User Welcome Section */}
-        <div className="flex justify-end bgp-4 p-4">
-          <div className="flex bg-gray-100 max-w-fit shadow-md rounded-2xl p-2 ">
-            <div className="welcome-section p-4 max-w-fit  mb-4 ">
-              <h2 className=" text-md font-semibold text-black">
-                Welcome, {user.name}!
-              </h2>
-              <div className="mt-2 text-sm space-y-1">
-                <p className="text-black">SSN/SIN: {user.ssn_sin}</p>
-                <p className="text-black">Address: {user.address}</p>
-                {userType === "client" && user.date_of_registration && (
-                  <p className="text-black">
-                    Member since:{" "}
-                    {new Date(user.date_of_registration).toLocaleDateString()}
-                  </p>
-                )}
-                {userType === "employee" && (
-                  <>
-                    <p className="text-black">Role: {user.role}</p>
-                    <p className="text-black">Hotel: {user.hotelName}</p>
-                  </>
-                )}
-              </div>
-            </div>
-            <div>
-              <img
-                src={user.profilePictureURL}
-                className="h-30 w-30 my-3 rounded-full border-4 border-gray-800 object-cover"
-              />
-            </div>
+        <div className="welcome-section p-4 bg-gray-100 rounded-lg mb-4 shadow-md">
+          <h2 className="text-xl font-semibold text-black">
+            Welcome, {user.name}!
+          </h2>
+          <div className="mt-2 space-y-1">
+            <p className="text-black">SSN/SIN: {user.ssn_sin}</p>
+            <p className="text-black">Address: {user.address}</p>
+            {userType === "client" && user.date_of_registration && (
+              <p className="text-black">
+                Member since:{" "}
+                {new Date(user.date_of_registration).toLocaleDateString()}
+              </p>
+            )}
+            {userType === "employee" && (
+              <>
+                <p className="text-black">Role: {user.role}</p>
+                <p className="text-black">Hotel: {user.hotelName}</p>
+              </>
+            )}
           </div>
         </div>
 
         {/* Top Welcoming design :-( */}
-        <div className=" homepage-top-right-container">
+        <div className="homepage-top-right-container">
           <img
             src="images/homepageImage.png"
-            className="homepage-top-right-image my-12"
+            className="homepage-top-right-image"
           />
           <div className="homepage-image-overlay" />
           <div className="homepage-image-text-overlay">
