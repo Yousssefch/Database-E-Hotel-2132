@@ -2,8 +2,25 @@ import { prisma } from '@/app/database/prisma'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const chains = await prisma.hotelChain.findMany()
-  return NextResponse.json(chains)
+  try {
+    const hotelChains = await prisma.hotelChain.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    })
+    
+    return NextResponse.json(hotelChains)
+  } catch (error) {
+    console.error('Error fetching hotel chains:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch hotel chains' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(req: Request) {
