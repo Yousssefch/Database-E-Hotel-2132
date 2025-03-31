@@ -103,7 +103,7 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
           bookingDate: new Date().toISOString(),
           checkInDate: checkIn.toISOString(),
           checkOutDate: checkOut.toISOString(),
-          status: "confirmed"
+          status: "pending"
         }),
       });
       
@@ -113,12 +113,12 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
       }
       
       const bookingData = await response.json();
-      setSuccess("Reservation successful! Redirecting to your reservations...");
+      setSuccess("Reservation request submitted! Your booking is pending approval by an administrator. You'll see it in your reservations once approved.");
       
-      // Redirect to reservations page after 2 seconds
+      // Redirect to reservations page after 3 seconds
       setTimeout(() => {
         router.push('/myreservations');
-      }, 2000);
+      }, 3000);
       
     } catch (err: any) {
       setError(err.message || "An error occurred while creating your reservation");

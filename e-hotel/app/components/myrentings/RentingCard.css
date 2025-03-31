@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap');
 
-.hotel-reservation-container {
+.renting-card-container {
     width: 100%;
     height: 150px;
     display: flex;
@@ -15,19 +15,19 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.hotel-reservation-container:hover {
+.renting-card-container:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.hotel-reservation-image-container {
+.renting-card-image-container {
     height: 100%;
     width: 40%;
     border-radius: 10px;
     position: relative;
 }
 
-.hotel-reservation-image {
+.renting-card-image {
     border-radius: 10px;
     border: 1px solid rgb(163, 163, 163);
     width: 100%;
@@ -35,7 +35,7 @@
     object-fit: cover;
 }
 
-.hotel-reservation-overlay {
+.renting-card-overlay {
     position: absolute;
     background-color: black;
     opacity: 0.3;
@@ -46,14 +46,14 @@
     border-radius: 10px;
 }
 
-.hotel-overlay-text-title {
+.renting-overlay-text-title {
     position: absolute;
     bottom: 10px;
     left: 10px;
     color: white;
 }
 
-.hotel-reservation-text-from-container {
+.renting-card-text-from-container {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -62,17 +62,17 @@
     color: black;
 }
 
-.hotel-reservation-text-from-title {
+.renting-card-text-from-title {
     font-size: 12px;
     font-weight: bolder;
     margin-top: 10px;
 }
 
-.hotel-reservation-text-from-subtitle {
+.renting-card-text-from-subtitle {
     font-size: 10px;
 }
 
-.hotel-reservation-text-container {
+.renting-card-text-container {
     display: flex;
     flex-direction: column;
     width: 60%;
@@ -80,7 +80,7 @@
     padding: 5px;
 }
 
-.hotel-reservation-text-hotel-name {
+.renting-card-text-hotel-name {
     color: black;
     font-weight: bold;
     font-size: 15px;
@@ -88,60 +88,14 @@
     font-family: 'Poppins';
 }
 
-.hover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    z-index: 10;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-    color: white;
-    text-align: center;
+.renting-card-text-room-type {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
 }
 
-.hotel-reservation-container:hover .hover-overlay {
-    opacity: 1;
-}
-
-.overlay-text {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.overlay-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.overlay-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: white;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-}
-
-.overlay-button.approve {
-    background-color: green;
-}
-
-.overlay-button.cancel {
-}
-
-.overlay-button:hover {
-    background-color: white;
-    color: black;
-}
+.renting-card-text-employee {
+    color: #444;
+    font-size: 11px;
+    margin-top: 5px;
+} 

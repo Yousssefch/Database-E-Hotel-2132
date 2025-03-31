@@ -8,6 +8,7 @@
     width: 100%;
     text-align: center;
     margin-top: 3%;
+    padding: 0 20px;
 }
 .my-reservations-right-top-title{
     font-family: "Poppins";
@@ -24,12 +25,74 @@
     background-color: rgb(208, 208, 208);
     justify-self: center;
     border-radius: 10px;
-    margin-top: 50px;
+    margin: 30px auto;
 }
 .my-reservations-right-image{
     width: 15%;
+    max-width: 150px;
 }
 .my-reservations-image-container{
     display: flex;
     justify-content: center;
+    margin: 20px 0;
+}
+
+/* Grid layout styles */
+.grid {
+    display: grid;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gap-6 {
+    gap: 1.5rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    
+    .my-reservations-right-container {
+        padding: 0 10px;
+    }
+    
+    .my-reservations-right-image {
+        width: 25%;
+    }
+}
+
+/* Loading spinner */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

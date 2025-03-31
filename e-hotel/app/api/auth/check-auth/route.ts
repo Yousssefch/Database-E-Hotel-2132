@@ -8,45 +8,92 @@ const prisma = new PrismaClient();
 export async function GET() {
     console.log('Check-auth API called');
     try {
-        const cookieStore = cookies();
-        const sessionCookie = cookieStore.get('session');
-        const userIdCookie = cookieStore.get('user_id');
+        // Get cookies from the request
+        const cookiesList = cookies();
         
-        console.log('Session cookie:', sessionCookie?.value);
-        console.log('User ID cookie:', userIdCookie?.value);
+        // Access cookies using the .get() method
+        const sessionCookie = cookiesList.get('session');
+        const userIdCookie = cookiesList.get('user_id');
+        const userTypeCookie = cookiesList.get('user_type');
+        
+        const sessionCookieValue = sessionCookie?.value;
+        const userIdCookieValue = userIdCookie?.value;
+        const userTypeCookieValue = userTypeCookie?.value;
+        
+        console.log('Session cookie:', sessionCookieValue);
+        console.log('User ID cookie:', userIdCookieValue);
+        console.log('User type cookie:', userTypeCookieValue);
         
         // If session or user_id cookie is missing, user is not authenticated
-        if (!sessionCookie || !userIdCookie) {
+        if (!sessionCookieValue || !userIdCookieValue) {
             console.log('Missing session or user_id cookie, authentication failed');
             return NextResponse.json({ authenticated: false }, { status: 401 });
         }
         
+        // Determine user type - default to client for backward compatibility
+        const userType = userTypeCookieValue || 'client';
+        
         try {
-            // Get user information using the user_id cookie
-            const customer = await prisma.customer.findUnique({
-                where: {
-                    ssn_sin: userIdCookie.value
+            // Different authentication paths for clients and employees
+            if (userType === 'employee') {
+                // Find employee by SSN/SIN
+                const employee = await prisma.employee.findFirst({
+                    where: {
+                        ssn_sin: userIdCookieValue
+                    },
+                    include: {
+                        hotel: true
+                    }
+                });
+                
+                if (!employee) {
+                    console.log('Employee not found in database');
+                    return NextResponse.json({ authenticated: false }, { status: 401 });
                 }
-            });
-            
-            if (!customer) {
-                console.log('User not found in database');
-                return NextResponse.json({ authenticated: false }, { status: 401 });
+                
+                console.log('Employee authenticated successfully:', employee.fullName);
+                
+                // Return employee data
+                return NextResponse.json({
+                    authenticated: true,
+                    userType: 'employee',
+                    user: {
+                        id: employee.id,
+                        name: employee.fullName,
+                        ssn_sin: employee.ssn_sin,
+                        address: employee.address,
+                        role: employee.role,
+                        hotelId: employee.hotelId,
+                        hotelName: employee.hotel.name
+                    }
+                });
+            } else {
+                // Client authentication (existing flow)
+                const customer = await prisma.customer.findUnique({
+                    where: {
+                        ssn_sin: userIdCookieValue
+                    }
+                });
+                
+                if (!customer) {
+                    console.log('Customer not found in database');
+                    return NextResponse.json({ authenticated: false }, { status: 401 });
+                }
+                
+                console.log('Customer authenticated successfully:', customer.fullName);
+                
+                // Return customer data
+                return NextResponse.json({
+                    authenticated: true,
+                    userType: 'client',
+                    user: {
+                        name: customer.fullName,
+                        ssn_sin: customer.ssn_sin,
+                        address: customer.address,
+                        date_of_registration: customer.registrationDate.toISOString()
+                    }
+                });
             }
-            
-            console.log('User authenticated successfully:', customer.fullName);
-            
-            // Return user data
-            return NextResponse.json({
-                authenticated: true,
-                user: {
-                    name: customer.fullName,
-                    ssn_sin: customer.ssn_sin,
-                    address: customer.address,
-                    date_of_registration: customer.registrationDate.toISOString()
-                }
-            });
-            
         } catch (dbError: any) {
             console.error('Database error during auth check:', dbError);
             return NextResponse.json({ authenticated: false }, { status: 500 });

@@ -40,7 +40,11 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
     const [isCanceling, setIsCanceling] = useState(false);
     const [error, setError] = useState("");
 
-    const isBooked = booking.status === "confirmed";
+    const isConfirmed = booking.status === "confirmed";
+    const isPending = booking.status === "pending";
+    const isCancelled = booking.status === "cancelled";
+    const isDeclined = booking.status === "declined";
+    
     const checkInDate = new Date(booking.checkInDate);
     const checkOutDate = new Date(booking.checkOutDate);
 
@@ -145,6 +149,18 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                 <h1 className="text-white hotel-overlay-text-title">
                   {hotelDetails?.address.split(',').pop()?.trim() || "Location"}
                 </h1>
+                
+                {/* Status Badge */}
+                <div className="absolute top-2 right-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    isConfirmed ? 'bg-green-100 text-green-800' : 
+                    isPending ? 'bg-yellow-100 text-yellow-800' :
+                    isDeclined ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                  </span>
+                </div>
             </div>
 
             <div className="hotel-reservation-text-container">
@@ -161,20 +177,20 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                 </div>
                 <div className="mt-2">
                   <span className={`text-xs px-2 py-1 rounded ${
-                    booking.status === 'confirmed' 
-                      ? 'bg-green-100 text-green-800' 
-                      : booking.status === 'cancelled'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                    isConfirmed ? 'bg-green-100 text-green-800' : 
+                    isPending ? 'bg-yellow-100 text-yellow-800' : 
+                    isDeclined ? 'bg-red-100 text-red-800' :
+                    isCancelled ? 'bg-gray-100 text-gray-800' :
+                    'bg-yellow-100 text-yellow-800'
                   }`}>
                     {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                   </span>
                 </div>
             </div>
 
-            {isHovered && booking.status !== 'cancelled' && (
+            {isHovered && booking.status !== 'cancelled' && booking.status !== 'declined' && (
                 <div className="hover-overlay">
-                    {isBooked ? (
+                    {isConfirmed ? (
                         <>
                             <p className="overlay-text">Do you want to cancel?</p>
                             <button 
@@ -191,6 +207,8 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                                 )}
                             </button>
                         </>
+                    ) : isPending ? (
+                        <p className="overlay-text">Your reservation is awaiting approval</p>
                     ) : (
                         <p className="overlay-text">Waiting for confirmation...</p>
                     )}

@@ -8,7 +8,8 @@ const LoginPage: React.FC = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
-        ssn_sin: ''
+        ssn_sin: '',
+        userType: 'client' // Default to client login
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +54,7 @@ const LoginPage: React.FC = () => {
             }
 
             if (data.success) {
+                // Redirect to homepage for both client and employee users
                 router.push('/homepage');
             } else {
                 setError(data.message || 'Login failed');
@@ -67,7 +69,7 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -85,6 +87,17 @@ const LoginPage: React.FC = () => {
                     The faster you fill up, the faster you'll be able to travel!
                 </p>
                 <form className="form-container" onSubmit={handleSubmit}>
+                    <label className="label">Login as:</label>
+                    <select
+                        name="userType"
+                        className="customer-select"
+                        value={formData.userType}
+                        onChange={handleChange}
+                    >
+                        <option value="client">Client</option>
+                        <option value="employee">Employee</option>
+                    </select>
+
                     <label className="label text-black">Full Name:</label>
                     <input
                         type="text"

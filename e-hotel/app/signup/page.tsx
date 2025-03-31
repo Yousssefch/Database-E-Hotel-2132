@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "./SignUpPage.css";
 
@@ -10,11 +10,39 @@ const SignUpPage: React.FC = () => {
         name: '',
         ssn: '',
         address: '',
-        profilePicture: ''
+        profilePicture: '',
+        userType: 'client', // Default to client
+        hotelId: '' // For employees only
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [debugInfo, setDebugInfo] = useState<any>(null);
+    const [hotels, setHotels] = useState<any[]>([]);
+    const [isLoadingHotels, setIsLoadingHotels] = useState(false);
+
+    // Fetch hotels for employee registration
+    useEffect(() => {
+        if (formData.userType === 'employee') {
+            fetchHotels();
+        }
+    }, [formData.userType]);
+
+    const fetchHotels = async () => {
+        setIsLoadingHotels(true);
+        try {
+            const response = await fetch('/api/hotels');
+            if (!response.ok) {
+                throw new Error(`Failed to fetch hotels: ${response.status}`);
+            }
+            const data = await response.json();
+            setHotels(data);
+        } catch (err) {
+            console.error('Error fetching hotels:', err);
+            setError('Failed to load hotels for employee registration');
+        } finally {
+            setIsLoadingHotels(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,12 +53,35 @@ const SignUpPage: React.FC = () => {
         console.log('Submitting form data:', formData);
 
         try {
-            const response = await fetch('/api/auth/register', {
+            // Choose endpoint based on user type
+            const endpoint = formData.userType === 'client' 
+                ? '/api/auth/register' 
+                : '/api/employees';
+
+            // Prepare the data based on user type
+            const requestData = formData.userType === 'client' 
+                ? {
+                    name: formData.name,
+                    ssn: formData.ssn,
+                    address: formData.address,
+                    profilePicture: formData.profilePicture
+                }
+                : {
+                    fullName: formData.name,
+                    ssn_sin: formData.ssn,
+                    address: formData.address,
+                    hotelId: parseInt(formData.hotelId),
+                    role: 'Staff' // Default role, can be expanded later
+                };
+
+            console.log(`Sending request to ${endpoint} with data:`, requestData);
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(requestData),
             });
 
             console.log('Response status:', response.status);
@@ -43,6 +94,7 @@ const SignUpPage: React.FC = () => {
             let data;
             try {
                 data = JSON.parse(responseText);
+                console.log('Parsed response data:', data);
             } catch (parseError) {
                 console.error('Error parsing response as JSON:', parseError);
                 setError(`Server returned invalid JSON. Status: ${response.status}`);
@@ -53,9 +105,11 @@ const SignUpPage: React.FC = () => {
                 return;
             }
 
-            if (data.success) {
+            if (data.success || response.ok) {
+                console.log('Registration successful, redirecting to login');
                 router.push('/login');
             } else {
+                console.error('Registration failed:', data.message || 'Unknown error');
                 setError(data.message || 'Registration failed');
                 setDebugInfo(data.details || null);
             }
@@ -86,6 +140,17 @@ const SignUpPage: React.FC = () => {
                     Don't have an account? Register now to enjoy seamless check-ins
                 </p>
                 <form className="form-container" onSubmit={handleSubmit}>
+                    <label className="label">Register as:</label>
+                    <select
+                        name="userType"
+                        className="customer-select"
+                        value={formData.userType}
+                        onChange={handleChange}
+                    >
+                        <option value="client">Client</option>
+                        <option value="employee">Employee</option>
+                    </select>
+
                     <label className="label">Full Name:</label>
                     <input
                         type="text"
@@ -117,6 +182,28 @@ const SignUpPage: React.FC = () => {
                         required
                     />
                     
+                    {formData.userType === 'employee' && (
+                        <>
+                            <label className="label">Select Hotel:</label>
+                            <select
+                                name="hotelId"
+                                className="customer-select"
+                                value={formData.hotelId}
+                                onChange={handleChange}
+                                required
+                                disabled={isLoadingHotels}
+                            >
+                                <option value="">Select a hotel</option>
+                                {hotels.map(hotel => (
+                                    <option key={hotel.id} value={hotel.id}>
+                                        {hotel.name} - {hotel.address}
+                                    </option>
+                                ))}
+                            </select>
+                            {isLoadingHotels && <p className="text-sm text-gray-500">Loading hotels...</p>}
+                        </>
+                    )}
+                    
                     <label className="label">Profile Picture URL (optional):</label>
                     <input
                         type="text"
@@ -144,7 +231,7 @@ const SignUpPage: React.FC = () => {
                     <button 
                         type="submit" 
                         className="submit-button"
-                        disabled={isLoading}
+                        disabled={isLoading || (formData.userType === 'employee' && !formData.hotelId)}
                     >
                         {isLoading ? 'Registering...' : 'Register'}
                     </button>

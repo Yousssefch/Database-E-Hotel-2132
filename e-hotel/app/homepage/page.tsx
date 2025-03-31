@@ -11,7 +11,11 @@ interface User {
     name: string;
     ssn_sin: string;
     address: string;
-    date_of_registration: string;
+    date_of_registration?: string;
+    role?: string;
+    hotelId?: number;
+    hotelName?: string;
+    id?: number;
 }
 
 interface Hotel {
@@ -42,7 +46,9 @@ const Homepage: React.FC = () =>  {
     const [showHotelInfo, setShowHotelInfo] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
+    const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
     const [selectedLocation, setSelectedLocation] = useState('all');
+    const [userType, setUserType] = useState<string>('');
 
     // Fetch hotels from API
     useEffect(() => {
@@ -110,6 +116,7 @@ const Homepage: React.FC = () =>  {
                 }
                 
                 setUser(data.user);
+                setUserType(data.userType || 'client');
             } catch (error) {
                 console.error('Auth check failed:', error);
                 setError('Authentication failed. Please login again.');
@@ -140,9 +147,26 @@ const Homepage: React.FC = () =>  {
                             hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             hotel.address.toLowerCase().includes(searchTerm.toLowerCase());
         
-        // For price filtering, since rooms might not be loaded with details
-        // We'll just pass if minPrice is not set
-        const matchesPrice = !minPrice || minPrice <= 0;
+        // For price filtering, we need to check the cheapest room in each hotel
+        const hasRooms = hotel.rooms && hotel.rooms.length > 0;
+        
+        // Skip price filtering if no rooms or price filters not set
+        let matchesPrice = true;
+        
+        if (hasRooms && (minPrice || maxPrice)) {
+            // Find cheapest room - use ! assertion since we already checked that rooms exists and has length > 0
+            const cheapestPrice = Math.min(...hotel.rooms!.map(room => room.price));
+            
+            // Apply min price filter if set
+            if (minPrice && minPrice > 0) {
+                matchesPrice = cheapestPrice >= minPrice;
+            }
+            
+            // Apply max price filter if set
+            if (maxPrice && maxPrice > 0 && matchesPrice) {
+                matchesPrice = cheapestPrice <= maxPrice;
+            }
+        }
         
         // Check if hotel address contains the selected location (city name)
         const matchesLocation = selectedLocation === 'all' || 
@@ -252,7 +276,15 @@ const Homepage: React.FC = () =>  {
                     <div className="mt-2 space-y-1">
                         <p className="text-black">SSN/SIN: {user.ssn_sin}</p>
                         <p className="text-black">Address: {user.address}</p>
-                        <p className="text-black">Member since: {new Date(user.date_of_registration).toLocaleDateString()}</p>
+                        {userType === 'client' && user.date_of_registration && (
+                            <p className="text-black">Member since: {new Date(user.date_of_registration).toLocaleDateString()}</p>
+                        )}
+                        {userType === 'employee' && (
+                            <>
+                                <p className="text-black">Role: {user.role}</p>
+                                <p className="text-black">Hotel: {user.hotelName}</p>
+                            </>
+                        )}
                     </div>
                 </div>
                 
@@ -286,12 +318,22 @@ const Homepage: React.FC = () =>  {
 
                 {/* Sorting mechanics */}
                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4 homepage-sort-container">
-                    <h1 className="text-black font-medium">Sort:</h1>
+                    <h1 className="text-black font-medium">Filter:</h1>
                     <input 
                         type="number" 
                         placeholder="Min Price" 
                         className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort" 
+                        value={minPrice || ''}
                         onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
+                        min="0"
+                    />
+                    <input 
+                        type="number" 
+                        placeholder="Max Price" 
+                        className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort" 
+                        value={maxPrice || ''}
+                        onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
+                        min="0"
                     />
                     <select 
                         className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort"
