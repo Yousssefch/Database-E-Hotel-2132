@@ -5,7 +5,9 @@ const Navbar: React.FC = () => {
   return (
     <div className="navbar-container">
       <div className="navbar">
-        <img src="images/Logo.png" className="navbar-img-logo" />
+        <a href="/" className="justify-center flex">
+          <img src="images/Logo.png" className="navbar-img-logo" />
+        </a>
         <div className="navbar-logo"></div>
 
         {/* Menu Items */}
