@@ -25,31 +25,13 @@ interface HotelCardProps {
 }
 
 export default function HotelCard({ hotel, onClick }: HotelCardProps) {
-    const [showRooms, setShowRooms] = useState(false);
-    
     // Find the cheapest room price to display
     const cheapestRoom = hotel.rooms && hotel.rooms.length > 0 
         ? hotel.rooms.reduce((min, room) => room.price < min.price ? room : min, hotel.rooms[0]) 
         : null;
     
-    const handleCardClick = (e: React.MouseEvent) => {
-        if ((e.target as HTMLElement).closest('.room-dropdown-container') || 
-            (e.target as HTMLElement).closest('button')) {
-            // Don't propagate if clicking the dropdown or button
-            e.stopPropagation();
-        } else {
-            // Handle the card click
-            onClick && onClick();
-        }
-    };
-    
-    const toggleRoomDropdown = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setShowRooms(!showRooms);
-    };
-
     return(
-        <div onClick={handleCardClick} className="cursor-pointer relative">
+        <div onClick={onClick} className="cursor-pointer relative">
             <article className="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-4 pb-4 pt-20 w-70 mt-10">
                 <img 
                   src={hotel.urlImage || "https://images.unsplash.com/photo-1499856871958-5b9627545d1a"} 
@@ -76,43 +58,7 @@ export default function HotelCard({ hotel, onClick }: HotelCardProps) {
 
                     <h1 className="hotelcard-rating-text">{hotel.rating}.0</h1>
                 </div>
-                
-                {/* View Rooms Button */}
-                <button 
-                    onClick={toggleRoomDropdown}
-                    className="z-10 mt-3 bg-white text-black py-1 px-3 text-sm rounded hover:bg-gray-100 transition"
-                >
-                    {showRooms ? 'Hide Rooms' : 'View Rooms'}
-                </button>
             </article>
-            
-            {/* Room Dropdown */}
-            {showRooms && (
-                <div className="room-dropdown-container absolute left-0 right-0 bg-white shadow-lg rounded-b-lg p-3 z-30 text-black">
-                    {hotel.rooms && hotel.rooms.length > 0 ? (
-                        <div>
-                            <h4 className="font-semibold mb-2 border-b pb-1">Available Rooms</h4>
-                            <ul className="space-y-2">
-                                {hotel.rooms.map(room => (
-                                    <li key={room.id} className="flex justify-between items-center p-2 hover:bg-gray-100 rounded">
-                                        <div>
-                                            <p className="font-medium">{room.name}</p>
-                                            <p className="text-xs text-gray-600">{room.capacity} Guests • {room.viewType}</p>
-                                            <p className="text-xs text-gray-600">{room.amenities}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold">${room.price.toFixed(2)}</p>
-                                            <button className="text-xs bg-black text-white px-2 py-1 rounded mt-1">Select</button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : (
-                        <p className="text-center py-2">No rooms available</p>
-                    )}
-                </div>
-            )}
         </div>
     )
 }
