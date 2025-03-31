@@ -53,13 +53,10 @@ const AddRoomForm: React.FC = () => {
         setSuccess('');
 
         try {
-            // Validate form data
             if (!formData.hotelId || !formData.name || !formData.price || 
                 !formData.capacity || !formData.viewType) {
                 throw new Error('Please fill in all required fields');
             }
-
-            // Convert to correct data types
             const roomData = {
                 hotelId: parseInt(formData.hotelId as string),
                 name: formData.name,
@@ -87,7 +84,6 @@ const AddRoomForm: React.FC = () => {
             const result = await response.json();
             setSuccess('Room added successfully!');
             
-            // Reset form
             setFormData({
                 hotelId: '',
                 name: '',

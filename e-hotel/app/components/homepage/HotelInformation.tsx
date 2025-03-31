@@ -206,14 +206,13 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
      <div className="hotel-information-overlay" />
       <div className="bg-white rounded-2xl shadow-lg w-3/4 h-auto max-h-[80vh] p-6 relative overflow-auto">
-        {/* Show error message if any */}
+        {/* Error Message */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
         
-        {/* Show success message if any */}
         {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             {success}
@@ -270,9 +269,8 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
                   required
                 />
               </label>
-            </div>
 
-            {/* Customer Selection for Employees */}
+            </div>
             {isEmployee && (
               <div className="mt-4 text-black">
                 <label className="block text-sm font-medium text-black mb-2">
@@ -296,8 +294,7 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
                 </select>
               </div>
             )}
-
-            {/* Room Selection */}
+            {/* SELECT ROOM */}
             <div className="mt-4">
               <h3 className="font-semibold text-black mb-2">Select a Room</h3>
               {hotel.rooms && hotel.rooms.length > 0 ? (
@@ -346,8 +343,6 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
                 </div>
               </div>
             )}
-
-            {/* Additional Information */}
             <div className="text-black mt-4">
                 <h1 className="hotel-information-add-info ">Additional Information:</h1>
 
