@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import NavBarTop from "./components/NavBarTop";
-import KeenCarousel from "./components/KeenCarousel";
 
 export default function Homepage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,6 +56,25 @@ export default function Homepage() {
               </div>
             </div>
           ))}
+        </div>
+        {/* login bouttons  */}
+        <div className="flex fixed inset-0 m-auto top-100 gap-20 backdrop-blur-sm p-6 items-center rounded-3xl justify-center w-fit h-fit">
+          <div className="flex flex-col items-center">
+            <span className="text-xl ">Want to give it a try?</span>
+            <a href="/signup">
+              <button className="btn btn-xl px-16 hover:scale-110 btn-primary rounded-2xl mt-2">
+                Sign up
+              </button>
+            </a>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-xl ">Already a client ?</span>
+            <a href="/login">
+              <button className="btn btn-xl px-16 hover:scale-110 btn-primary rounded-2xl mt-2">
+                LogIn
+              </button>
+            </a>
+          </div>
         </div>
 
         {/* Les boutons de navigation */}
