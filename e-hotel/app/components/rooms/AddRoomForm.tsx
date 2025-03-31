@@ -4,33 +4,42 @@ import React, { useState, useEffect } from 'react';
 import "./AddRoomForm.css";
 
 interface Hotel {
-    hotel_id: number;
-    hotel_name: string;
+    id: number;
+    name: string;
+    address: string;
 }
 
 const AddRoomForm: React.FC = () => {
     const [hotels, setHotels] = useState<Hotel[]>([]);
     const [formData, setFormData] = useState({
-        hotel_id: '',
-        room_name: '',
+        hotelId: '',
+        name: '',
         price: '',
-        amenities: [] as string[],
+        amenities: '',
         capacity: '',
-        type_of_view: '',
-        extended_capacity: 'no',
+        viewType: '',
+        extendable: false,
         problems: ''
     });
-    const [amenityInput, setAmenityInput] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     useEffect(() => {
         // Fetch hotels for dropdown
         const fetchHotels = async () => {
             try {
                 const response = await fetch('/api/hotels');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch hotels');
+                }
+                
                 const data = await response.json();
                 setHotels(data);
             } catch (error) {
                 console.error('Error fetching hotels:', error);
+                setError('Failed to load hotels. Please try again later.');
             }
         };
 
@@ -39,106 +48,122 @@ const AddRoomForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
+        setSuccess('');
+
         try {
+            // Validate form data
+            if (!formData.hotelId || !formData.name || !formData.price || 
+                !formData.capacity || !formData.viewType) {
+                throw new Error('Please fill in all required fields');
+            }
+
+            // Convert to correct data types
+            const roomData = {
+                hotelId: parseInt(formData.hotelId as string),
+                name: formData.name,
+                price: parseFloat(formData.price),
+                amenities: formData.amenities || 'None',
+                capacity: parseInt(formData.capacity),
+                viewType: formData.viewType,
+                extendable: formData.extendable,
+                problems: formData.problems || null
+            };
+
             const response = await fetch('/api/rooms', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    ...formData,
-                    extended_capacity: formData.extended_capacity === 'yes' ? true : false,
-                    price: parseFloat(formData.price),
-                    capacity: parseInt(formData.capacity)
-                }),
+                body: JSON.stringify(roomData),
             });
 
-            if (response.ok) {
-                alert('Room added successfully!');
-                // Reset form
-                setFormData({
-                    hotel_id: '',
-                    room_name: '',
-                    price: '',
-                    amenities: [],
-                    capacity: '',
-                    type_of_view: '',
-                    extended_capacity: 'no',
-                    problems: ''
-                });
-                setAmenityInput('');
-            } else {
-                alert('Failed to add room');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add room');
             }
-        } catch (error) {
+
+            const result = await response.json();
+            setSuccess('Room added successfully!');
+            
+            // Reset form
+            setFormData({
+                hotelId: '',
+                name: '',
+                price: '',
+                amenities: '',
+                capacity: '',
+                viewType: '',
+                extendable: false,
+                problems: ''
+            });
+        } catch (error: any) {
             console.error('Error adding room:', error);
-            alert('Error adding room');
+            setError(error.message || 'Error adding room. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleAddAmenity = () => {
-        if (amenityInput.trim()) {
-            setFormData(prev => ({
-                ...prev,
-                amenities: [...prev.amenities, amenityInput.trim()]
-            }));
-            setAmenityInput('');
-        }
-    };
-
-    const handleRemoveAmenity = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            amenities: prev.amenities.filter((_, i) => i !== index)
+            [name]: type === 'checkbox' 
+                ? (e.target as HTMLInputElement).checked 
+                : value
         }));
     };
 
     return (
         <div className="add-room-form-container">
+            {error && (
+                <div className="error-message bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {error}
+                </div>
+            )}
+            {success && (
+                <div className="success-message bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {success}
+                </div>
+            )}
             <form onSubmit={handleSubmit} className="add-room-form">
                 <div className="form-group">
-                    <label htmlFor="hotel_id">Hotel:</label>
+                    <label htmlFor="hotelId">Hotel:</label>
                     <select
-                        id="hotel_id"
-                        name="hotel_id"
-                        value={formData.hotel_id}
+                        id="hotelId"
+                        name="hotelId"
+                        value={formData.hotelId}
                         onChange={handleChange}
                         required
                         className="form-input"
                     >
                         <option value="">Select a hotel</option>
                         {hotels.map(hotel => (
-                            <option key={hotel.hotel_id} value={hotel.hotel_id}>
-                                {hotel.hotel_name}
+                            <option key={hotel.id} value={hotel.id}>
+                                {hotel.name} - {hotel.address}
                             </option>
                         ))}
                     </select>
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="room_name">Room Name:</label>
+                    <label htmlFor="name">Room Name:</label>
                     <input
                         type="text"
-                        id="room_name"
-                        name="room_name"
-                        value={formData.room_name}
+                        id="name"
+                        name="name"
+                        value={formData.name}
                         onChange={handleChange}
                         required
                         className="form-input"
-                        placeholder="Enter room name"
+                        placeholder="Enter room name (e.g. Deluxe Suite)"
                     />
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="price">Price per Night:</label>
+                    <label htmlFor="price">Price per Night ($):</label>
                     <input
                         type="number"
                         id="price"
@@ -154,42 +179,7 @@ const AddRoomForm: React.FC = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="amenities">Amenities:</label>
-                    <div className="amenities-input-group">
-                        <input
-                            type="text"
-                            id="amenities"
-                            value={amenityInput}
-                            onChange={(e) => setAmenityInput(e.target.value)}
-                            className="form-input"
-                            placeholder="Enter an amenity"
-                        />
-                        <button 
-                            type="button" 
-                            onClick={handleAddAmenity}
-                            className="add-amenity-button"
-                        >
-                            Add
-                        </button>
-                    </div>
-                    <div className="amenities-list">
-                        {formData.amenities.map((amenity, index) => (
-                            <div key={index} className="amenity-tag">
-                                {amenity}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveAmenity(index)}
-                                    className="remove-amenity-button"
-                                >
-                                    ×
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="capacity">Capacity:</label>
+                    <label htmlFor="capacity">Capacity (guests):</label>
                     <input
                         type="number"
                         id="capacity"
@@ -204,51 +194,68 @@ const AddRoomForm: React.FC = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="type_of_view">View Type:</label>
+                    <label htmlFor="amenities">Amenities:</label>
+                    <textarea
+                        id="amenities"
+                        name="amenities"
+                        value={formData.amenities}
+                        onChange={handleChange}
+                        className="form-input textarea"
+                        placeholder="Enter amenities (e.g. WiFi, TV, Mini Bar, etc.)"
+                        rows={3}
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="viewType">View Type:</label>
                     <select
-                        id="type_of_view"
-                        name="type_of_view"
-                        value={formData.type_of_view}
+                        id="viewType"
+                        name="viewType"
+                        value={formData.viewType}
                         onChange={handleChange}
                         required
                         className="form-input"
                     >
                         <option value="">Select view type</option>
-                        <option value="Sea">Sea</option>
-                        <option value="Mountain">Mountain</option>
+                        <option value="Sea View">Sea View</option>
+                        <option value="Mountain View">Mountain View</option>
+                        <option value="City View">City View</option>
+                        <option value="Garden View">Garden View</option>
+                        <option value="Pool View">Pool View</option>
                     </select>
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="extended_capacity">Extendable:</label>
-                    <select
-                        id="extended_capacity"
-                        name="extended_capacity"
-                        value={formData.extended_capacity}
+                <div className="form-group flex items-center">
+                    <input
+                        type="checkbox"
+                        id="extendable"
+                        name="extendable"
+                        checked={formData.extendable}
                         onChange={handleChange}
-                        required
-                        className="form-input"
-                    >
-                        <option value="no">No</option>
-                        <option value="yes">Yes</option>
-                    </select>
+                        className="form-checkbox h-5 w-5 text-black mr-2"
+                    />
+                    <label htmlFor="extendable">Room is extendable (e.g. with additional beds)</label>
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="problems">Problems/Damages:</label>
+                    <label htmlFor="problems">Problems/Damages (if any):</label>
                     <textarea
                         id="problems"
                         name="problems"
                         value={formData.problems}
                         onChange={handleChange}
                         className="form-input textarea"
-                        placeholder="Enter any problems or damages"
-                        rows={4}
+                        placeholder="Enter any problems or damages (optional)"
+                        rows={3}
                     />
                 </div>
 
-                <button type="submit" className="submit-button">
-                    Add Room
+                <button 
+                    type="submit" 
+                    className="submit-button bg-black text-white px-6 py-2 rounded-lg"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Adding Room...' : 'Add Room'}
                 </button>
             </form>
         </div>
