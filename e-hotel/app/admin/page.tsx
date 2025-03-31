@@ -79,7 +79,14 @@ const AdminPage = () => {
       }
     };
 
+    // Initial fetch
     fetchBookings();
+
+    // Set up periodic refresh every 2 seconds
+    const intervalId = setInterval(fetchBookings, 2000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleApproveBooking = async (bookingId: number) => {

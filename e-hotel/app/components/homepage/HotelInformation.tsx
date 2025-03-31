@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarIcon, X } from "lucide-react";
 import "./HotelInformation.css"
 import { useRouter } from "next/navigation";
@@ -24,6 +24,12 @@ interface HotelInformationProps {
   onClose: () => void;
 }
 
+interface Customer {
+  ssn_sin: string;
+  fullName: string;
+  address: string;
+}
+
 export default function HotelInformation({ isOpen, hotel, onClose }: HotelInformationProps) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -31,16 +37,37 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isEmployee, setIsEmployee] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      try {
+        const response = await fetch('/api/auth/check-auth');
+        const data = await response.json();
+        
+        if (data.authenticated && data.userType === 'employee') {
+          setIsEmployee(true);
+          const customersResponse = await fetch('/api/customers');
+          const customersData = await customersResponse.json();
+          setCustomers(customersData);
+        }
+      } catch (error) {
+        console.error('Error checking user role:', error);
+      }
+    };
+    
+    checkUserRole();
+  }, []);
 
   if (!isOpen || !hotel) return null;
 
-  // Calculate the average room price
   const averagePrice = hotel.rooms && hotel.rooms.length > 0
     ? hotel.rooms.reduce((sum, room) => sum + (room.price || 0), 0) / hotel.rooms.length
     : 'N/A';
 
-  // Calculate number of nights and total price
   const calculateTotalPrice = () => {
     if (!startDate || !endDate || !selectedRoom) return 0;
     
@@ -54,14 +81,13 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
   
   const totalPrice = calculateTotalPrice();
   
-  // Handle reserve button click
+
   const handleReserve = async () => {
     if (!startDate || !endDate || !selectedRoom) {
       setError("Please select dates and a room");
       return;
     }
     
-    // Validate dates
     const checkIn = new Date(startDate);
     const checkOut = new Date(endDate);
     const today = new Date();
@@ -75,13 +101,17 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
       setError("Check-out date must be after check-in date");
       return;
     }
+
+    if (isEmployee && !selectedCustomer) {
+      setError("Please select a customer");
+      return;
+    }
     
     setIsLoading(true);
     setError("");
     setSuccess("");
     
     try {
-      // First check if user is authenticated
       const authResponse = await fetch('/api/auth/check-auth');
       const authData = await authResponse.json();
       
@@ -90,30 +120,81 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
         setIsLoading(false);
         return;
       }
-      
-      // Create booking
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerSsnSin: authData.user.ssn_sin,
-          roomId: selectedRoom.id,
-          bookingDate: new Date().toISOString(),
-          checkInDate: checkIn.toISOString(),
-          checkOutDate: checkOut.toISOString(),
-          status: "pending"
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create reservation");
+
+      if (isEmployee) {
+        const bookingResponse = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            customerSsnSin: selectedCustomer?.ssn_sin,
+            roomId: selectedRoom.id,
+            bookingDate: new Date().toISOString(),
+            checkInDate: checkIn.toISOString(),
+            checkOutDate: checkOut.toISOString(),
+            status: "pending"
+          }),
+        });
+
+        if (!bookingResponse.ok) {
+          const errorData = await bookingResponse.json();
+          throw new Error(errorData.message || "Failed to create booking");
+        }
+
+        const bookingData = await bookingResponse.json();
+        
+        // Then create a renting record
+        const rentingResponse = await fetch('/api/rentings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bookingId: bookingData.id,
+            customerSsnSin: selectedCustomer?.ssn_sin,
+            roomId: selectedRoom.id,
+            employeeId: authData.user.id,
+            checkInDate: checkIn.toISOString(),
+            checkOutDate: checkOut.toISOString()
+          }),
+        });
+
+        if (!rentingResponse.ok) {
+          const errorData = await rentingResponse.json();
+          throw new Error(errorData.message || "Failed to create renting record");
+        }
+
+        // Remove the automatic status update to confirmed
+        // The booking will stay in pending status until approved by admin
+        
+      } else {
+        // For regular customers, just create a booking
+        const bookingResponse = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            customerSsnSin: authData.user.ssn_sin,
+            roomId: selectedRoom.id,
+            bookingDate: new Date().toISOString(),
+            checkInDate: checkIn.toISOString(),
+            checkOutDate: checkOut.toISOString(),
+            status: "pending"
+          }),
+        });
+
+        if (!bookingResponse.ok) {
+          const errorData = await bookingResponse.json();
+          throw new Error(errorData.message || "Failed to create booking");
+        }
       }
       
-      const bookingData = await response.json();
-      setSuccess("Reservation request submitted! Your booking is pending approval by an administrator. You'll see it in your reservations once approved.");
+      setSuccess(isEmployee 
+        ? "Reservation created successfully!" 
+        : "Reservation request submitted! Your booking is pending approval by an administrator. You'll see it in your reservations once approved."
+      );
       
       // Redirect to reservations page after 3 seconds
       setTimeout(() => {
@@ -173,7 +254,7 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
             </div>
 
             {/* Date Selection */}
-            <div className="mt-4 space-y-3">
+            <div className="flex flex-col md:flex-row gap-4 mt-4">
               <label className="flex items-center gap-2 text-black">
                 <CalendarIcon className="w-5 h-5 text-black" /> Start Date
                 <input
@@ -197,6 +278,31 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
                 />
               </label>
             </div>
+
+            {/* Customer Selection for Employees */}
+            {isEmployee && (
+              <div className="mt-4 text-black">
+                <label className="block text-sm font-medium text-black mb-2">
+                  Select Customer
+                </label>
+                <select
+                  value={selectedCustomer?.ssn_sin || ""}
+                  onChange={(e) => {
+                    const customer = customers.find(c => c.ssn_sin === e.target.value);
+                    setSelectedCustomer(customer || null);
+                  }}
+                  className="border rounded-lg px-3 py-2 w-full"
+                  required
+                >
+                  <option value="">Select a customer...</option>
+                  {customers.map((customer) => (
+                    <option key={customer.ssn_sin} value={customer.ssn_sin}>
+                      {customer.fullName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Room Selection */}
             <div className="mt-4">
@@ -227,7 +333,7 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
 
             {/* Reservation Summary */}
             {selectedRoom && startDate && endDate && (
-              <div className="mt-4 bg-gray-50 p-3 rounded-lg">
+              <div className="mt-4 bg-gray-50 p-3 rounded-lg text-black">
                 <h3 className="font-semibold text-black mb-2">Reservation Summary</h3>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Room:</span>
@@ -250,7 +356,7 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
 
             {/* Additional Information */}
             <div className="text-black mt-4">
-                <h1 className="hotel-information-add-info">Additional Information:</h1>
+                <h1 className="hotel-information-add-info ">Additional Information:</h1>
 
                 <div className="flex">
                   <label className="text-xs font-semibold">Address:</label>
