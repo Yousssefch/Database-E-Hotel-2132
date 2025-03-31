@@ -4,7 +4,7 @@ const ProfileContent = () => {
   return (
     <div className="mt-4">
       {/* Profile Information */}
-      <div className="flex items-center border-t border-gray-800">
+      <div className="flex items-center border-t border-gray-300">
         <h3 className="text-xl font-semibold px-32">Profile Photo</h3>
         <div className="flex items-center px-70 gap-6 my-12 justify-center">
           <img
@@ -12,7 +12,7 @@ const ProfileContent = () => {
             className="h-20 w-20 rounded-full"
             alt="Profile"
           />
-          <button className="btn btn-md ml-4 btn-primary rounded-box">
+          <button className="btn btn-md ml-4 rounded-box hover:scale-95">
             Update
           </button>
           <button className="btn btn-outline border-0 btn-md hover:scale-95 text-red-400">
@@ -22,10 +22,10 @@ const ProfileContent = () => {
       </div>
 
       {/* Email Address */}
-      <div className="mt-4 flex items-center border-t border-gray-800">
+      <div className="mt-4 flex items-center border-t border-gray-300">
         <h3 className="text-xl font-semibold px-32 py-8">Email address</h3>
         <div className="items-center gap-8 px-70 my-12">
-          <p className="text-gray-400">
+          <p className="text-gray-800">
             saimonhewitt@kahf.dev{" "}
             <span className="badge badge-primary ml-2">Primary</span>
           </p>
@@ -34,10 +34,10 @@ const ProfileContent = () => {
       </div>
 
       {/* Phone Number */}
-      <div className="mt-4 flex border-t items-center border-gray-800">
+      <div className="mt-4 flex border-t items-center border-gray-300">
         <h3 className="text-xl font-semibold px-32 py-8">Phone number</h3>
         <div className="items-center gap-8 px-70 my-12">
-          <p className="text-gray-400">
+          <p className="text-gray-800">
             +1 (545) 124-4547{" "}
             <span className="badge badge-primary ml-2">Primary</span>
           </p>
@@ -46,7 +46,7 @@ const ProfileContent = () => {
       </div>
 
       {/* Connected Accounts */}
-      <div className="mt-4 flex border-t border-b items-center border-gray-800">
+      <div className="mt-4 flex border-t border-b items-center border-gray-300">
         <h3 className="text-xl font-semibold px-32 py-8">Connected accounts</h3>
         <div className="items-center px-56 my-12">
           <div className="flex items-center mt-2">
@@ -55,7 +55,7 @@ const ProfileContent = () => {
               className="w-5 h-5 mr-2"
               alt="Google"
             />
-            <p className="text-gray-400">Google • example@gmail.com</p>
+            <p className="text-gray-800">Google • example@gmail.com</p>
           </div>
           <button className="text-blue-500 mt-2">+ Connect account</button>
         </div>
