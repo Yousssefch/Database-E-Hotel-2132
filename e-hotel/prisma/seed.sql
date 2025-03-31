@@ -1,9 +1,7 @@
--- Drop existing data
 TRUNCATE TABLE "Room" CASCADE;
 TRUNCATE TABLE "Hotel" CASCADE;
 TRUNCATE TABLE "HotelChain" CASCADE;
 
--- Insert Hotel Chains
 INSERT INTO "HotelChain" (name, "centralOfficeAddress", "numberOfHotels", "contactEmail", "phoneNumber") 
 VALUES
 ('Luxury Stays International', '123 Park Avenue, New York, NY 10001', 8, 'corporate@luxurystays.com', '1-800-555-0101'),
@@ -12,7 +10,6 @@ VALUES
 ('Business Hub Hotels', '101 Bay Street, San Francisco, CA 94105', 8, 'contact@businesshub.com', '1-800-555-0104'),
 ('Mountain Getaways', '202 Alpine Road, Denver, CO 80202', 8, 'reservations@mountaingetaways.com', '1-800-555-0105');
 
--- Insert Hotels for Luxury Stays International
 INSERT INTO "Hotel" ("hotelChainId", name, rating, "numberOfRooms", address, "contactEmail", "phoneNumber", "urlImage")
 SELECT 
     hc.id,
@@ -132,65 +129,141 @@ FROM "HotelChain" hc,
 ) AS v(name, rating, "numberOfRooms", address, "contactEmail", "phoneNumber", "urlImage")
 WHERE hc.name = 'Mountain Getaways';
 
--- Insert Rooms for each hotel (5 rooms per hotel with different capacities)
+
+WITH RECURSIVE hotel_rooms AS (
+    SELECT 
+        h.id as hotel_id,
+        h.name as hotel_name,
+        h.rating,
+        1 as room_number
+    FROM "Hotel" h
+    
+    UNION ALL
+    
+    SELECT 
+        hotel_id,
+        hotel_name,
+        rating,
+        room_number + 1
+    FROM hotel_rooms
+    WHERE room_number < 5
+)
 INSERT INTO "Room" ("hotelId", name, price, amenities, capacity, "viewType", extendable, problems)
 SELECT 
-    h.id,
-    room_name,
-    room_price,
-    room_amenities,
-    room_capacity,
-    room_viewtype,
-    room_extendable,
-    room_problems
-FROM "Hotel" h,
-(VALUES
-    -- Luxury Stays Manhattan Rooms
-    ('Presidential Suite', 1200.00, 'Wi-Fi, AC, TV, Mini Bar, Jacuzzi, Ocean View', 4, 'Ocean', true, NULL),
-    ('Executive Suite', 800.00, 'Wi-Fi, AC, TV, Mini Bar, City View', 3, 'City', true, NULL),
-    ('Deluxe Room', 600.00, 'Wi-Fi, AC, TV, City View', 2, 'City', true, NULL),
-    ('Standard Room', 400.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 300.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    -- Luxury Stays Brooklyn Rooms
-    ('Penthouse Suite', 1000.00, 'Wi-Fi, AC, TV, Mini Bar, Brooklyn Bridge View', 4, 'City', true, NULL),
-    ('Family Suite', 700.00, 'Wi-Fi, AC, TV, Mini Bar, City View', 4, 'City', true, NULL),
-    ('Deluxe Room', 500.00, 'Wi-Fi, AC, TV, City View', 2, 'City', true, NULL),
-    ('Standard Room', 350.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 250.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    -- Budget Inn Downtown Rooms
-    ('Family Room', 200.00, 'Wi-Fi, AC, TV, City View', 4, 'City', true, NULL),
-    ('Double Room', 150.00, 'Wi-Fi, AC, TV, City View', 2, 'City', true, NULL),
-    ('Standard Room', 120.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 100.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    ('Economy Room', 80.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    -- Resort Retreats South Beach Rooms
-    ('Oceanfront Suite', 900.00, 'Wi-Fi, AC, TV, Mini Bar, Beach Access', 4, 'Ocean', true, NULL),
-    ('Beach View Room', 700.00, 'Wi-Fi, AC, TV, Beach View', 3, 'Ocean', true, NULL),
-    ('Garden Room', 500.00, 'Wi-Fi, AC, TV, Garden View', 2, 'Garden', true, NULL),
-    ('Standard Room', 350.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 250.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    -- Business Hub Financial District Rooms
-    ('Executive Suite', 600.00, 'Wi-Fi, AC, TV, Mini Bar, City View', 3, 'City', true, NULL),
-    ('Business Room', 450.00, 'Wi-Fi, AC, TV, City View', 2, 'City', true, NULL),
-    ('Standard Room', 350.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 250.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    ('Economy Room', 200.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL),
-    -- Mountain Getaways Downtown Rooms
-    ('Mountain View Suite', 500.00, 'Wi-Fi, AC, TV, Mini Bar, Mountain View', 4, 'Mountain', true, NULL),
-    ('Family Room', 400.00, 'Wi-Fi, AC, TV, Mountain View', 4, 'Mountain', true, NULL),
-    ('Deluxe Room', 300.00, 'Wi-Fi, AC, TV, City View', 2, 'City', true, NULL),
-    ('Standard Room', 250.00, 'Wi-Fi, AC, TV, City View', 2, 'City', false, NULL),
-    ('Single Room', 200.00, 'Wi-Fi, AC, TV, City View', 1, 'City', false, NULL)
-) AS v(room_name, room_price, room_amenities, room_capacity, room_viewtype, room_extendable, room_problems)
-WHERE h.name IN (
-    'Luxury Stays Manhattan',
-    'Luxury Stays Brooklyn',
-    'Budget Inn Downtown',
-    'Resort Retreats South Beach',
-    'Business Hub Financial District',
-    'Mountain Getaways Downtown'
-);
-
--- Note: This is a sample of rooms for 6 hotels. You would need to insert similar room data for all 40 hotels.
--- Each hotel should have 5 rooms with different capacities and amenities.
--- The pattern would be similar for the remaining hotels, with appropriate price ranges based on the hotel's rating and location. 
+    hr.hotel_id,
+    CASE 
+        WHEN hr.room_number = 1 THEN 
+            CASE 
+                WHEN hr.hotel_name LIKE '%Luxury%' THEN 
+                    CASE 
+                        WHEN hr.rating = 5 THEN 'The Royal Penthouse'
+                        ELSE 'The Grand Suite'
+                    END
+                WHEN hr.hotel_name LIKE '%Resort%' THEN 
+                    CASE 
+                        WHEN hr.rating = 5 THEN 'The Beachfront Villa'
+                        ELSE 'The Ocean Suite'
+                    END
+                WHEN hr.hotel_name LIKE '%Mountain%' THEN 
+                    CASE 
+                        WHEN hr.rating = 5 THEN 'The Summit Suite'
+                        ELSE 'The Alpine Lodge'
+                    END
+                ELSE 
+                    CASE 
+                        WHEN hr.rating = 5 THEN 'The Corner Office Suite'
+                        ELSE 'The Executive Quarters'
+                    END
+            END
+        WHEN hr.room_number = 2 THEN 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'The Family Haven'
+                ELSE 'The Family Quarters'
+            END
+        WHEN hr.room_number = 3 THEN 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'The Deluxe Chamber'
+                ELSE 'The Comfort Room'
+            END
+        WHEN hr.room_number = 4 THEN 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'The Standard Suite'
+                ELSE 'The Classic Room'
+            END
+        ELSE 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'The Cozy Corner'
+                ELSE 'The Solo Retreat'
+            END
+    END as room_name,
+    CASE 
+        WHEN hr.room_number = 1 THEN 
+            CASE 
+                WHEN hr.rating = 5 THEN 1299.99
+                WHEN hr.rating = 4 THEN 999.99
+                ELSE 799.99
+            END
+        WHEN hr.room_number = 2 THEN 
+            CASE 
+                WHEN hr.rating = 5 THEN 849.99
+                WHEN hr.rating = 4 THEN 699.99
+                ELSE 549.99
+            END
+        WHEN hr.room_number = 3 THEN 
+            CASE 
+                WHEN hr.rating = 5 THEN 649.99
+                WHEN hr.rating = 4 THEN 499.99
+                ELSE 399.99
+            END
+        WHEN hr.room_number = 4 THEN 
+            CASE 
+                WHEN hr.rating = 5 THEN 449.99
+                WHEN hr.rating = 4 THEN 349.99
+                ELSE 299.99
+            END
+        ELSE 
+            CASE 
+                WHEN hr.rating = 5 THEN 349.99
+                WHEN hr.rating = 4 THEN 279.99
+                ELSE 229.99
+            END
+    END as price,
+    CASE 
+        WHEN hr.room_number = 1 THEN 
+            CASE 
+                WHEN hr.hotel_name LIKE '%Luxury%' THEN 'Wi-Fi, AC, Smart TV, Mini Bar, Premium View, Butler Service'
+                WHEN hr.hotel_name LIKE '%Resort%' THEN 'Wi-Fi, AC, Smart TV, Mini Bar, Beach Access, Pool Access'
+                WHEN hr.hotel_name LIKE '%Mountain%' THEN 'Wi-Fi, AC, Smart TV, Mini Bar, Mountain View, Fireplace'
+                ELSE 'Wi-Fi, AC, Smart TV, Mini Bar, City View, Work Desk'
+            END
+        WHEN hr.room_number = 2 THEN 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'Wi-Fi, AC, Smart TV, Mini Bar, City View, Family Amenities'
+                ELSE 'Wi-Fi, AC, TV, City View, Family Amenities'
+            END
+        ELSE 
+            CASE 
+                WHEN hr.rating >= 4 THEN 'Wi-Fi, AC, Smart TV, City View'
+                ELSE 'Wi-Fi, AC, TV, City View'
+            END
+    END as amenities,
+    CASE 
+        WHEN hr.room_number IN (1, 2) THEN 4
+        WHEN hr.room_number IN (3, 4) THEN 2
+        ELSE 1
+    END as capacity,
+    CASE 
+        WHEN hr.room_number = 1 THEN 
+            CASE 
+                WHEN hr.hotel_name LIKE '%Resort%' THEN 'Ocean'
+                WHEN hr.hotel_name LIKE '%Mountain%' THEN 'Mountain'
+                ELSE 'City'
+            END
+        ELSE 'City'
+    END as view_type,
+    CASE 
+        WHEN hr.room_number <= 3 THEN true
+        ELSE false
+    END as extendable,
+    NULL as problems
+FROM hotel_rooms hr;

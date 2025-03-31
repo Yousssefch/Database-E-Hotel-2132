@@ -56,7 +56,7 @@ const Homepage: React.FC = () =>  {
     const [selectedLocation, setSelectedLocation] = useState('all');
     const [userType, setUserType] = useState<string>('');
     const [locationSearch, setLocationSearch] = useState('');
-    const [searchRadius, setSearchRadius] = useState(50); // Default 50km radius
+    const [searchRadius, setSearchRadius] = useState(50);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [selectedChain, setSelectedChain] = useState<string>('all');
@@ -69,9 +69,8 @@ const Homepage: React.FC = () =>  {
     const [totalPages, setTotalPages] = useState(1);
     const hotelsPerPage = 9;
 
-    // Function to calculate distance between two points using Haversine formula
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-        const R = 6371; // Earth's radius in kilometers
+        const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 
@@ -82,14 +81,13 @@ const Homepage: React.FC = () =>  {
         return R * c;
     };
 
-    // Function to geocode an address
     const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
         try {
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`,
                 {
                     headers: {
-                        'User-Agent': 'E-Hotel/1.0' // Required by Nominatim's terms of service
+                        'User-Agent': 'E-Hotel/1.0'
                     }
                 }
             );
@@ -112,7 +110,6 @@ const Homepage: React.FC = () =>  {
         }
     };
 
-    // Function to get user's location
     const getUserLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -132,7 +129,6 @@ const Homepage: React.FC = () =>  {
         }
     };
 
-    // Function to handle location search input
     const handleLocationSearch = async (address: string) => {
         setLocationSearch(address);
         if (address.trim()) {
@@ -152,14 +148,11 @@ const Homepage: React.FC = () =>  {
         }
     };
 
-    // Modified filter hotels function to include distance-based filtering
     const filteredHotels = hotels.filter(hotel => {
-        // Use case-insensitive search for hotel name and address
         const matchesSearch = searchTerm === '' || 
                             hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             hotel.address.toLowerCase().includes(searchTerm.toLowerCase());
         
-        // Location-based filtering
         let matchesLocation = true;
         if ((locationSearch && searchLocation) || userLocation) {
             const searchCoords = searchLocation || userLocation;
@@ -174,7 +167,6 @@ const Homepage: React.FC = () =>  {
             }
         }
         
-        // New filters
         const matchesChain = selectedChain === 'all' || hotel.hotelChain?.name === selectedChain;
         
         let matchesCapacity = true;
@@ -204,13 +196,11 @@ const Homepage: React.FC = () =>  {
                matchesChain && matchesCapacity && matchesRating && matchesAmenities;
     });
 
-    // Modified fetchHotels function to include pagination
     useEffect(() => {
         const fetchHotels = async () => {
             try {
                 setIsHotelsLoading(true);
                 
-                // Build query parameters
                 const params = new URLSearchParams();
                 
                 if (selectedChain !== 'all') {
@@ -233,11 +223,9 @@ const Homepage: React.FC = () =>  {
                     params.append('maxRating', maxRating.toString());
                 }
 
-                // Add pagination parameters
                 params.append('page', currentPage.toString());
                 params.append('limit', hotelsPerPage.toString());
                 
-                // Fetch hotels with filters and pagination
                 const response = await fetch(`/api/hotels/filter?${params.toString()}`);
                 
                 if (!response.ok) {
@@ -258,7 +246,6 @@ const Homepage: React.FC = () =>  {
         fetchHotels();
     }, [selectedChain, minCapacity, selectedAmenities, minRating, maxRating, currentPage]);
 
-    // Check authentication
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -304,7 +291,6 @@ const Homepage: React.FC = () =>  {
         checkAuth();
     }, [router]);
 
-    // Add this new useEffect to fetch hotel chains
     useEffect(() => {
         const fetchHotelChains = async () => {
             try {
@@ -332,7 +318,6 @@ const Homepage: React.FC = () =>  {
         setShowHotelInfo(false);
     };
 
-    // Test data for debugging
     const testHotels: Hotel[] = [
         {
             id: 1,
@@ -394,14 +379,11 @@ const Homepage: React.FC = () =>  {
         }
     ];
 
-    // Add pagination controls
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    // Add pagination component
     const Pagination = () => {
-        // Generate page numbers to display
         const getPageNumbers = () => {
             const pages = [];
             const maxVisiblePages = 5;
@@ -489,7 +471,6 @@ const Homepage: React.FC = () =>  {
             <Navbar />
             
             <div className="homepage-right-container">
-                {/* User Welcome Section */}
                 <div className="welcome-section p-4 bg-gray-100 rounded-lg mb-4 shadow-md">
                     <h2 className="text-xl font-semibold text-black">Welcome, {user.name}!</h2>
                     <div className="mt-2 space-y-1">
@@ -507,7 +488,6 @@ const Homepage: React.FC = () =>  {
                     </div>
                 </div>
                 
-                {/* Top Welcoming design :-( */}
                 <div className="homepage-top-right-container">
                     <img src="images/homepageImage.png" className="homepage-top-right-image" />
                     <div className="homepage-image-overlay" />
@@ -516,13 +496,11 @@ const Homepage: React.FC = () =>  {
                     </div>
                 </div>
 
-                {/* Hotel List */}
                 <div className="homepage-hotel-text-container">
                     <h1 className="homepage-hotel-text-title text-black">Hotels</h1>
                     <h2 className="homepage-hotel-text-subtitle">Choose which Hotel you want to spend your days in</h2>
                 </div>
 
-                {/* Search bar */}
                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                     <div className="w-full">
                         <input 
@@ -535,7 +513,6 @@ const Homepage: React.FC = () =>  {
                     </div>
                 </div>
 
-                {/* Location-based search */}
                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4">
                     <div className="w-full md:w-1/3">
                         <input 
@@ -567,12 +544,10 @@ const Homepage: React.FC = () =>  {
                     </div>
                 </div>
 
-                {/* Sorting mechanics */}
                 <div className="flex w-full flex-wrap md:flex-nowrap gap-2 mt-4 homepage-sort-container">
                     <h1 className="text-black font-medium">Filter:</h1>
                 </div>
 
-                {/* Additional Filters */}
                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4 homepage-sort-container">
                     <h1 className="text-black font-medium">Additional Filters:</h1>
                     <select 
@@ -598,7 +573,6 @@ const Homepage: React.FC = () =>  {
                     />
                 </div>
 
-                {/* Rating and Amenities Filters */}
                 <div className="flex w-full flex-wrap gap-4 mt-4 justify-center">
                     <div className="w-full md:w-1/2 max-w-md">
                         <h2 className="text-black font-medium mb-2 text-center">Rating Range:</h2>

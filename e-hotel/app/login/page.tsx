@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         ssn_sin: '',
-        userType: 'client' // Default to client login
+        userType: 'client'
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +35,6 @@ const LoginPage: React.FC = () => {
             console.log('Response status:', response.status);
             console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
 
-            // Get raw text first to debug potential issues with JSON parsing
             const responseText = await response.text();
             console.log('Raw response text:', responseText);
 
@@ -54,7 +53,6 @@ const LoginPage: React.FC = () => {
             }
 
             if (data.success) {
-                // Redirect to homepage for both client and employee users
                 router.push('/homepage');
             } else {
                 setError(data.message || 'Login failed');
@@ -79,7 +77,6 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="login-container text-black">
-            {/* Left Side - Login Form */}
             <div className="login-form">
                 <img src="images/Logo.png" alt="E Hotel Logo" className="logo" />
                 <h1 className="welcome-text">Welcome Back</h1>
@@ -141,7 +138,6 @@ const LoginPage: React.FC = () => {
                 </form>
             </div>
 
-            {/* Right Side - Image */}
             <div className="image-container">
                 <img
                     src="images/LogInImage.png"

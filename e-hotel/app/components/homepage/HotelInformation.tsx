@@ -144,7 +144,6 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
 
         const bookingData = await bookingResponse.json();
         
-        // Then create a renting record
         const rentingResponse = await fetch('/api/rentings', {
           method: 'POST',
           headers: {
@@ -164,12 +163,8 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
           const errorData = await rentingResponse.json();
           throw new Error(errorData.message || "Failed to create renting record");
         }
-
-        // Remove the automatic status update to confirmed
-        // The booking will stay in pending status until approved by admin
         
       } else {
-        // For regular customers, just create a booking
         const bookingResponse = await fetch('/api/bookings', {
           method: 'POST',
           headers: {
@@ -196,14 +191,12 @@ export default function HotelInformation({ isOpen, hotel, onClose }: HotelInform
         : "Reservation request submitted! Your booking is pending approval by an administrator. You'll see it in your reservations once approved."
       );
       
-      // Redirect to reservations page after 3 seconds
       setTimeout(() => {
         router.push('/myreservations');
       }, 3000);
       
-    } catch (err: any) {
-      setError(err.message || "An error occurred while creating your reservation");
-      console.error("Reservation error:", err);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred while creating the reservation");
     } finally {
       setIsLoading(false);
     }
