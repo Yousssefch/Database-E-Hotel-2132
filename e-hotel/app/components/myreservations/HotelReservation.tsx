@@ -96,29 +96,26 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
     }, [booking]);
 
     const handleCancelBooking = async () => {
-      if (confirm('Are you sure you want to cancel this reservation?')) {
+      if (confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
         setIsCanceling(true);
         try {
-          // Update booking status to 'cancelled'
+          // Delete the booking from the database
           const response = await fetch(`/api/bookings/${booking.id}`, {
-            method: 'PATCH',
+            method: 'DELETE',
             headers: {
               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              status: 'cancelled'
-            })
+            }
           });
 
           if (!response.ok) {
-            throw new Error('Failed to cancel reservation');
+            throw new Error('Failed to delete reservation');
           }
 
-          // Refresh the page to show updated status
+          // Refresh the page to show updated list
           window.location.reload();
         } catch (error) {
-          console.error('Error cancelling booking:', error);
-          setError('Failed to cancel reservation. Please try again.');
+          console.error('Error deleting booking:', error);
+          setError('Failed to delete reservation. Please try again.');
         } finally {
           setIsCanceling(false);
         }
@@ -188,29 +185,32 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                 </div>
             </div>
 
-            {isHovered && booking.status !== 'cancelled' && booking.status !== 'declined' && (
+            {isHovered && (
                 <div className="hover-overlay">
-                    {isConfirmed ? (
-                        <>
-                            <p className="overlay-text">Do you want to cancel?</p>
-                            <button 
-                              className="overlay-button cancel"
-                              onClick={handleCancelBooking}
-                              disabled={isCanceling}
-                            >
-                                {isCanceling ? (
-                                  <div className="animate-spin h-4 w-4 border-2 border-white rounded-full"></div>
-                                ) : (
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                                  </svg>
-                                )}
-                            </button>
-                        </>
-                    ) : isPending ? (
+                    {(isConfirmed || isPending) && !isCancelled && (
+                      <button 
+                        className="absolute top-2 right-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 shadow-sm z-10"
+                        onClick={handleCancelBooking}
+                        disabled={isCanceling}
+                      >
+                        {isCanceling ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-white rounded-full"></div>
+                        ) : (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                            Cancel
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {isPending ? (
                         <p className="overlay-text">Your reservation is awaiting approval</p>
+                    ) : isCancelled ? (
+                        <p className="overlay-text">This reservation has been cancelled</p>
                     ) : (
-                        <p className="overlay-text">Waiting for confirmation...</p>
+                        <p className="overlay-text">View reservation details</p>
                     )}
                 </div>
             )}

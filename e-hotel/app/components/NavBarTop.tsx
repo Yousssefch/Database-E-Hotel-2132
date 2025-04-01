@@ -2,9 +2,14 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+interface User {
+  name: string;
+  ssn_sin: string;
+}
+
 const NavBarTop = () => {
-  const [user, setUser] = useState(null);
-  const [userType, setUserType] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -76,9 +81,14 @@ const NavBarTop = () => {
                   <a>Profile</a>
                 </li>
                 {userType === "employee" && (
-                  <li>
-                    <a>Employee Dashboard</a>
-                  </li>
+                  <>
+                    <li>
+                      <a>Employee Dashboard</a>
+                    </li>
+                    <li>
+                      <a href="/archive">Archives</a>
+                    </li>
+                  </>
                 )}
                 <li>
                   <button onClick={handleLogout}>Logout</button>
