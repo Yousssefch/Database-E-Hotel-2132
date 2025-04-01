@@ -29,16 +29,21 @@ const SignUpPage: React.FC = () => {
 
     const fetchHotels = async () => {
         setIsLoadingHotels(true);
+        setError('');
         try {
-            const response = await fetch('/api/hotels');
+            const response = await fetch('/api/hotels/signup');
             if (!response.ok) {
-                throw new Error(`Failed to fetch hotels: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch hotels');
             }
             const data = await response.json();
+            if (!Array.isArray(data)) {
+                throw new Error('Invalid response format');
+            }
             setHotels(data);
         } catch (err) {
             console.error('Error fetching hotels:', err);
-            setError('Failed to load hotels for employee registration');
+            setError(err instanceof Error ? err.message : 'Failed to load hotels for employee registration');
         } finally {
             setIsLoadingHotels(false);
         }
