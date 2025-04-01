@@ -1,3 +1,4 @@
+// routes/api/employees/route.ts
 import { prisma } from '@/app/database/prisma'
 import { NextResponse } from 'next/server'
 
@@ -55,8 +56,14 @@ export async function POST(req: Request) {
       )
     }
 
+    // Handle the urlImage field (if provided)
+    const employeeData = {
+      ...data, // spread other fields
+      urlImage: data.urlImage || null, // default to null if not provided
+    }
+
     // Create the employee
-    const employee = await prisma.employee.create({ data })
+    const employee = await prisma.employee.create({ data: employeeData })
     console.log('Employee created successfully:', employee)
     
     return NextResponse.json({

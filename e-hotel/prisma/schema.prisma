@@ -1,5 +1,3 @@
-// Updated Prisma Schema without Hotel → Manager relation
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -10,17 +8,17 @@ generator client {
 }
 
 model HotelChain {
-  id                    Int     @id @default(autoincrement())
-  name                  String
-  centralOfficeAddress  String
-  numberOfHotels        Int
-  contactEmail          String
-  phoneNumber           String
-  hotels                Hotel[]
+  id                   Int     @id @default(autoincrement())
+  name                 String
+  centralOfficeAddress String
+  numberOfHotels       Int
+  contactEmail         String
+  phoneNumber          String
+  hotels               Hotel[]
 }
 
 model Hotel {
-  id            Int     @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   hotelChainId  Int
   name          String
   rating        Int
@@ -29,49 +27,56 @@ model Hotel {
   contactEmail  String
   phoneNumber   String
   urlImage      String
+  managerId     Int?   @unique // Marked as unique to create a one-to-one relation
 
-  hotelChain    HotelChain @relation(fields: [hotelChainId], references: [id])
-  rooms         Room[]
-  employees     Employee[]
+  hotelChain HotelChain @relation(fields: [hotelChainId], references: [id])
+  rooms      Room[]
+  employees  Employee[] @relation("HotelEmployees")
+  manager    Employee?  @relation("HotelManager", fields: [managerId], references: [id])
 }
 
-model Room {
-  id          Int     @id @default(autoincrement())
-  hotelId     Int
-  name        String
-  price       Float
-  amenities   String
-  capacity    Int
-  viewType    String
-  extendable  Boolean
-  problems    String?
 
-  hotel       Hotel   @relation(fields: [hotelId], references: [id])
-  bookings    Booking[]
-  rentings    Renting[]
+model Room {
+  id         Int     @id @default(autoincrement())
+  hotelId    Int
+  name       String
+  price      Float
+  amenities  String
+  capacity   Int
+  viewType   String
+  extendable Boolean
+  problems   String?
+
+  hotel    Hotel     @relation(fields: [hotelId], references: [id])
+  bookings Booking[]
+  rentings Renting[]
 }
 
 model Customer {
-  ssn_sin         String @id
-  fullName        String
-  address         String
-  registrationDate DateTime
+  ssn_sin           String    @id
+  fullName          String
+  address           String
+  registrationDate  DateTime
   profilePictureURL String
-
-  bookings        Booking[]
-  rentings        Renting[]
+  cardNumber        String?
+  bookings          Booking[]
+  rentings          Renting[]
 }
 
 model Employee {
-  id         Int    @id @default(autoincrement())
-  hotelId    Int
-  fullName   String
-  address    String
-  ssn_sin    String
-  role       String
+  id       Int     @id @default(autoincrement())
+  hotelId  Int
+  fullName String
+  address  String
+  ssn_sin  String
+  role     String
+  urlImage String? // Nullable field for employee image
 
-  hotel      Hotel  @relation(fields: [hotelId], references: [id])
-  rentings   Renting[]
+  hotel    Hotel     @relation("HotelEmployees", fields: [hotelId], references: [id])
+  rentings Renting[]
+
+  // Inverse relation for the manager field in the Hotel model
+  managedHotel Hotel? @relation("HotelManager") // Inverse relation for manager
 }
 
 model Booking {
@@ -83,9 +88,9 @@ model Booking {
   checkOutDate   DateTime
   status         String
 
-  customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
-  room           Room     @relation(fields: [roomId], references: [id])
-  renting        Renting?
+  customer Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
+  room     Room     @relation(fields: [roomId], references: [id])
+  renting  Renting?
 }
 
 model Renting {
@@ -97,10 +102,10 @@ model Renting {
   checkInDate    DateTime
   checkOutDate   DateTime
 
-  booking        Booking? @relation(fields: [bookingId], references: [id])
-  customer       Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
-  room           Room     @relation(fields: [roomId], references: [id])
-  employee       Employee @relation(fields: [employeeId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id])
+  customer Customer @relation(fields: [customerSsnSin], references: [ssn_sin])
+  room     Room     @relation(fields: [roomId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Archives {
@@ -112,4 +117,3 @@ model Archives {
   checkInDate      DateTime
   checkOutDate     DateTime
 }
-

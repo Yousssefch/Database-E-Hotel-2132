@@ -8,6 +8,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const data = await req.json()
-  const customer = await prisma.customer.create({ data })
+
+  // Handle customer creation, making sure to include new fields like profilePictureURL
+  const customer = await prisma.customer.create({
+    data: {
+      ...data, // Assuming the incoming data includes fields like profilePictureURL
+    }
+  })
   return NextResponse.json(customer)
 }

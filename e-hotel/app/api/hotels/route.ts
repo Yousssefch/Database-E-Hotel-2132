@@ -23,7 +23,8 @@ export async function GET() {
           fullName: true,
           role: true
         }
-      }
+      },
+      manager: true, // Include the manager relation
     } 
   })
   return NextResponse.json(hotels)

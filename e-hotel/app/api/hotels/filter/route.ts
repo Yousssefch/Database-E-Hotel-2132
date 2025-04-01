@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const amenities = searchParams.get('amenities')?.split(',')
     const minRating = searchParams.get('minRating')
     const maxRating = searchParams.get('maxRating')
+    const managerId = searchParams.get('managerId') // Added managerId for filtering by manager
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '9')
     const skip = (page - 1) * limit
@@ -17,14 +18,14 @@ export async function GET(request: Request) {
     const query: any = {
       include: {
         hotelChain: true,
-        rooms: true
+        rooms: true,
       }
     }
 
     // Add where conditions
     const where: any = {}
 
-    // Nested query
+    // Nested query for chain name
     if (chain && chain !== 'all') {
       where.hotelChain = {
         name: {
@@ -57,6 +58,11 @@ export async function GET(request: Request) {
           }
         }
       }
+    }
+
+    // Filter by managerId (new condition added)
+    if (managerId) {
+      where.managerId = parseInt(managerId)
     }
 
     // Nested query for amenities
@@ -97,4 +103,4 @@ export async function GET(request: Request) {
       { status: 500 }
     )
   }
-} 
+}
