@@ -38,7 +38,6 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
     const [hotelDetails, setHotelDetails] = useState<Hotel | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isCanceling, setIsCanceling] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [error, setError] = useState("");
 
     const isConfirmed = booking.status === "confirmed";
@@ -126,29 +125,6 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
       }
     };
 
-    const handleDeleteBooking = async () => {
-      if (confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
-        setIsDeleting(true);
-        try {
-          const response = await fetch(`/api/bookings/${booking.id}`, {
-            method: 'DELETE',
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to delete reservation');
-          }
-
-          // Refresh the page to show updated list
-          window.location.reload();
-        } catch (error) {
-          console.error('Error deleting booking:', error);
-          setError('Failed to delete reservation. Please try again.');
-        } finally {
-          setIsDeleting(false);
-        }
-      }
-    };
-
     if (isLoading) {
       return (
         <div className="hotel-reservation-container animate-pulse">
@@ -187,23 +163,6 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                 </div>
             </div>
 
-            {/* Delete Button - Always visible for non-cancelled/declined reservations */}
-            {booking.status !== 'cancelled' && booking.status !== 'declined' && (
-                <button 
-                    className="delete-button"
-                    onClick={handleDeleteBooking}
-                    disabled={isDeleting}
-                >
-                    {isDeleting ? (
-                        <div className="animate-spin h-4 w-4 border-2 border-white rounded-full"></div>
-                    ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                        </svg>
-                    )}
-                </button>
-            )}
-
             <div className="hotel-reservation-text-container">
                 <h1 className="hotel-reservation-text-hotel-name">{hotelDetails?.name || "Hotel"}</h1>
                 <div className="hotel-reservation-text-from-container">
@@ -234,21 +193,19 @@ export default function HotelReservation({ booking, isClient = true }: HotelRese
                     {isConfirmed ? (
                         <>
                             <p className="overlay-text">Do you want to cancel?</p>
-                            <div className="flex gap-2">
-                                <button 
-                                  className="overlay-button cancel"
-                                  onClick={handleCancelBooking}
-                                  disabled={isCanceling}
-                                >
-                                    {isCanceling ? (
-                                      <div className="animate-spin h-4 w-4 border-2 border-white rounded-full"></div>
-                                    ) : (
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                                      </svg>
-                                    )}
-                                </button>
-                            </div>
+                            <button 
+                              className="overlay-button cancel"
+                              onClick={handleCancelBooking}
+                              disabled={isCanceling}
+                            >
+                                {isCanceling ? (
+                                  <div className="animate-spin h-4 w-4 border-2 border-white rounded-full"></div>
+                                ) : (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                  </svg>
+                                )}
+                            </button>
                         </>
                     ) : isPending ? (
                         <p className="overlay-text">Your reservation is awaiting approval</p>

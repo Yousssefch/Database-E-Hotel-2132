@@ -1,22 +1,9 @@
-import { NextResponse } from 'next/server'
 import { prisma } from '@/app/database/prisma'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
-  try {
-    const archives = await prisma.archives.findMany({
-      orderBy: {
-        checkInDate: 'desc'
-      }
-    })
-
-    return NextResponse.json(archives)
-  } catch (error) {
-    console.error('Error fetching archives:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch archives' },
-      { status: 500 }
-    )
-  }
+  const records = await prisma.archives.findMany()
+  return NextResponse.json(records)
 }
 
 export async function POST(req: Request) {
