@@ -35,6 +35,13 @@ interface Hotel {
   rooms?: any[];
   employees?: any[];
   numberOfRooms: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface HotelChain {
+  id: number;
+  name: string;
 }
 
 const Homepage: React.FC = () => {
@@ -47,37 +54,219 @@ const Homepage: React.FC = () => {
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [showHotelInfo, setShowHotelInfo] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
-  const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [userType, setUserType] = useState<string>("");
+  const [locationSearch, setLocationSearch] = useState("");
+  const [searchRadius, setSearchRadius] = useState(50);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [searchLocation, setSearchLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [selectedChain, setSelectedChain] = useState<string>("all");
+  const [minCapacity, setMinCapacity] = useState<number | undefined>(undefined);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState<number | undefined>(undefined);
+  const [maxRating, setMaxRating] = useState<number | undefined>(undefined);
+  const [hotelChains, setHotelChains] = useState<HotelChain[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const hotelsPerPage = 9;
 
-  // Fetch hotels from API
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const geocodeAddress = async (
+    address: string
+  ): Promise<{ lat: number; lng: number } | null> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}`,
+        {
+          headers: {
+            "User-Agent": "E-Hotel/1.0",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Geocoding failed");
+      }
+
+      const data = await response.json();
+      if (data && data[0]) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return null;
+    }
+  };
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setError(
+            "Could not get your location. Please enter a location manually."
+          );
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser");
+    }
+  };
+
+  const handleLocationSearch = async (address: string) => {
+    setLocationSearch(address);
+    if (address.trim()) {
+      try {
+        const coordinates = await geocodeAddress(address);
+        if (coordinates) {
+          setSearchLocation(coordinates);
+        } else {
+          setError(
+            "Could not find the specified location. Please try a different address."
+          );
+        }
+      } catch (error) {
+        console.error("Error geocoding location:", error);
+        setError("Error finding location. Please try again.");
+      }
+    } else {
+      setSearchLocation(null);
+    }
+  };
+
+  const filteredHotels = hotels.filter((hotel) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hotel.address.toLowerCase().includes(searchTerm.toLowerCase());
+
+    let matchesLocation = true;
+    if ((locationSearch && searchLocation) || userLocation) {
+      const searchCoords = searchLocation || userLocation;
+      if (searchCoords && hotel.latitude && hotel.longitude) {
+        const distance = calculateDistance(
+          searchCoords.lat,
+          searchCoords.lng,
+          hotel.latitude,
+          hotel.longitude
+        );
+        matchesLocation = distance <= searchRadius;
+      }
+    }
+
+    const matchesChain =
+      selectedChain === "all" || hotel.hotelChain?.name === selectedChain;
+
+    let matchesCapacity = true;
+    if (minCapacity && hotel.rooms && hotel.rooms.length > 0) {
+      const maxRoomCapacity = Math.max(
+        ...hotel.rooms.map((room) => room.capacity)
+      );
+      matchesCapacity = maxRoomCapacity >= minCapacity;
+    }
+
+    let matchesRating = true;
+    if (minRating && minRating > 0) {
+      matchesRating = hotel.rating >= minRating;
+    }
+    if (maxRating && maxRating > 0 && matchesRating) {
+      matchesRating = hotel.rating <= maxRating;
+    }
+
+    let matchesAmenities = true;
+    if (selectedAmenities.length > 0 && hotel.rooms && hotel.rooms.length > 0) {
+      matchesAmenities = hotel.rooms.some((room) =>
+        selectedAmenities.every((amenity) =>
+          room.amenities.toLowerCase().includes(amenity.toLowerCase())
+        )
+      );
+    }
+
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesChain &&
+      matchesCapacity &&
+      matchesRating &&
+      matchesAmenities
+    );
+  });
+
   useEffect(() => {
     const fetchHotels = async () => {
       try {
         setIsHotelsLoading(true);
-        console.log("Fetching hotels from API...");
-        const response = await fetch("/api/hotels");
 
-        console.log("API response status:", response.status);
+        const params = new URLSearchParams();
+
+        if (selectedChain !== "all") {
+          params.append("chain", selectedChain);
+        }
+
+        if (minCapacity) {
+          params.append("minCapacity", minCapacity.toString());
+        }
+
+        if (selectedAmenities.length > 0) {
+          params.append("amenities", selectedAmenities.join(","));
+        }
+
+        if (minRating) {
+          params.append("minRating", minRating.toString());
+        }
+
+        if (maxRating) {
+          params.append("maxRating", maxRating.toString());
+        }
+
+        params.append("page", currentPage.toString());
+        params.append("limit", hotelsPerPage.toString());
+
+        const response = await fetch(`/api/hotels/filter?${params.toString()}`);
 
         if (!response.ok) {
-          throw new Error(
-            `Failed to fetch hotels: ${response.status} ${response.statusText}`
-          );
+          throw new Error("Failed to fetch hotels");
         }
 
         const data = await response.json();
-        console.log("Hotels data received:", data);
-        console.log("Number of hotels:", data.length);
-
-        if (data.length === 0) {
-          console.warn("No hotels returned from API");
-        }
-
-        setHotels(data);
-        console.log("Hotels state updated");
+        setHotels(data.hotels);
+        setTotalPages(Math.ceil(data.total / hotelsPerPage));
       } catch (error) {
         console.error("Error fetching hotels:", error);
         setError("Failed to load hotels. Please try again later.");
@@ -87,9 +276,15 @@ const Homepage: React.FC = () => {
     };
 
     fetchHotels();
-  }, []);
+  }, [
+    selectedChain,
+    minCapacity,
+    selectedAmenities,
+    minRating,
+    maxRating,
+    currentPage,
+  ]);
 
-  // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -135,6 +330,24 @@ const Homepage: React.FC = () => {
     checkAuth();
   }, [router]);
 
+  useEffect(() => {
+    const fetchHotelChains = async () => {
+      try {
+        const response = await fetch("/api/hotel-chains");
+        if (!response.ok) {
+          throw new Error("Failed to fetch hotel chains");
+        }
+        const data = await response.json();
+        setHotelChains(data);
+      } catch (error) {
+        console.error("Error fetching hotel chains:", error);
+        setError("Failed to load hotel chains. Please try again later.");
+      }
+    };
+
+    fetchHotelChains();
+  }, []);
+
   const handleHotelClick = (hotel: Hotel) => {
     setSelectedHotel(hotel);
     setShowHotelInfo(true);
@@ -144,44 +357,6 @@ const Homepage: React.FC = () => {
     setShowHotelInfo(false);
   };
 
-  // Filter hotels based on search term, minimum price, and location
-  const filteredHotels = hotels.filter((hotel) => {
-    // Use case-insensitive search for hotel name and address
-    const matchesSearch =
-      searchTerm === "" ||
-      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.address.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // For price filtering, we need to check the cheapest room in each hotel
-    const hasRooms = hotel.rooms && hotel.rooms.length > 0;
-
-    // Skip price filtering if no rooms or price filters not set
-    let matchesPrice = true;
-
-    if (hasRooms && (minPrice || maxPrice)) {
-      // Find cheapest room - use ! assertion since we already checked that rooms exists and has length > 0
-      const cheapestPrice = Math.min(...hotel.rooms!.map((room) => room.price));
-
-      // Apply min price filter if set
-      if (minPrice && minPrice > 0) {
-        matchesPrice = cheapestPrice >= minPrice;
-      }
-
-      // Apply max price filter if set
-      if (maxPrice && maxPrice > 0 && matchesPrice) {
-        matchesPrice = cheapestPrice <= maxPrice;
-      }
-    }
-
-    // Check if hotel address contains the selected location (city name)
-    const matchesLocation =
-      selectedLocation === "all" ||
-      hotel.address.toLowerCase().includes(selectedLocation.toLowerCase());
-
-    return matchesSearch && matchesPrice && matchesLocation;
-  });
-
-  // Test data for debugging
   const testHotels: Hotel[] = [
     {
       id: 1,
@@ -243,6 +418,68 @@ const Homepage: React.FC = () => {
     },
   ];
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const Pagination = () => {
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+      let startPage = Math.max(
+        1,
+        currentPage - Math.floor(maxVisiblePages / 2)
+      );
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+
+      return pages;
+    };
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-6 mb-8">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 border-2 border-black rounded-md disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-100"
+          title="Previous page"
+        >
+          <ChevronLeft className="w-5 h-5 text-black" />
+        </button>
+
+        {getPageNumbers().map((pageNum) => (
+          <button
+            key={pageNum}
+            onClick={() => handlePageChange(pageNum)}
+            className={`px-3 py-1 border rounded-md ${
+              currentPage === pageNum
+                ? "bg-white text-black border-black"
+                : "bg-black text-white hover:bg-gray-800"
+            }`}
+          >
+            {pageNum}
+          </button>
+        ))}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 border-2 border-black rounded-md disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-100"
+          title="Next page"
+        >
+          <ChevronRight className="w-5 h-5 text-black" />
+        </button>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="homepage-container bg-white">
@@ -277,29 +514,37 @@ const Homepage: React.FC = () => {
 
       <div className="homepage-right-container">
         {/* User Welcome Section */}
-        <div className="welcome-section p-4 bg-gray-100 rounded-lg mb-4 shadow-md">
-          <h2 className="text-xl font-semibold text-black">
-            Welcome, {user.name}!
-          </h2>
-          <div className="mt-2 space-y-1">
-            <p className="text-black">SSN/SIN: {user.ssn_sin}</p>
-            <p className="text-black">Address: {user.address}</p>
-            {userType === "client" && user.date_of_registration && (
-              <p className="text-black">
-                Member since:{" "}
-                {new Date(user.date_of_registration).toLocaleDateString()}
-              </p>
-            )}
-            {userType === "employee" && (
-              <>
-                <p className="text-black">Role: {user.role}</p>
-                <p className="text-black">Hotel: {user.hotelName}</p>
-              </>
-            )}
+        <div className="flex justify-end bgp-4 p-4">
+          <div className="flex bg-gray-100 max-w-fit shadow-md rounded-2xl p-2 ">
+            <div className="welcome-section p-4 max-w-fit  mb-4 ">
+              <h2 className=" text-md font-semibold text-black">
+                Welcome, {user.name}!
+              </h2>
+              <div className="mt-2 text-sm space-y-1">
+                <p className="text-black">SSN/SIN: {user.ssn_sin}</p>
+                <p className="text-black">Address: {user.address}</p>
+                {userType === "client" && user.date_of_registration && (
+                  <p className="text-black">
+                    Member since:{" "}
+                    {new Date(user.date_of_registration).toLocaleDateString()}
+                  </p>
+                )}
+                {userType === "employee" && (
+                  <>
+                    <p className="text-black">Role: {user.role}</p>
+                    <p className="text-black">Hotel: {user.hotelName}</p>
+                  </>
+                )}
+              </div>
+            </div>
+            <div>
+              <img
+                src={user.profilePictureURL}
+                className="h-30 w-30 my-3 rounded-full border-4 border-gray-800 object-cover"
+              />
+            </div>
           </div>
         </div>
-
-        {/* Top Welcoming design :-( */}
         <div className="homepage-top-right-container">
           <img
             src="images/homepageImage.png"
@@ -313,7 +558,6 @@ const Homepage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hotel List */}
         <div className="homepage-hotel-text-container">
           <h1 className="homepage-hotel-text-title text-black">Hotels</h1>
           <h2 className="homepage-hotel-text-subtitle">
@@ -321,7 +565,6 @@ const Homepage: React.FC = () => {
           </h2>
         </div>
 
-        {/* Search bar */}
         <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
           <div className="w-full">
             <input
@@ -334,41 +577,168 @@ const Homepage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sorting mechanics */}
-        <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4 homepage-sort-container">
+        <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4">
+          <div className="w-full md:w-1/3">
+            <input
+              type="text"
+              className="border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white"
+              placeholder="Enter location (e.g., city, address)"
+              value={locationSearch}
+              onChange={(e) => handleLocationSearch(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-1/3">
+            <input
+              type="number"
+              className="border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-white"
+              placeholder="Search radius (km)"
+              value={searchRadius}
+              onChange={(e) => setSearchRadius(Number(e.target.value))}
+              min="1"
+              max="100"
+            />
+          </div>
+          <div className="w-full md:w-1/3">
+            <button
+              onClick={getUserLocation}
+              className="w-full cursor-pointer text-white px-4 py-2 rounded-lg bg-black hover:bg-black transition-colors"
+            >
+              Use My Location
+            </button>
+          </div>
+        </div>
+
+        <div className="flex w-full flex-wrap md:flex-nowrap gap-2 mt-4 homepage-sort-container">
           <h1 className="text-black font-medium">Filter:</h1>
-          <input
-            type="number"
-            placeholder="Min Price"
-            className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort"
-            value={minPrice || ""}
-            onChange={(e) =>
-              setMinPrice(e.target.value ? Number(e.target.value) : undefined)
-            }
-            min="0"
-          />
-          <input
-            type="number"
-            placeholder="Max Price"
-            className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort"
-            value={maxPrice || ""}
-            onChange={(e) =>
-              setMaxPrice(e.target.value ? Number(e.target.value) : undefined)
-            }
-            min="0"
-          />
+        </div>
+
+        <div className="flex w-full flex-wrap md:flex-nowrap gap-4 mt-4 homepage-sort-container">
+          <h1 className="text-black font-medium">Additional Filters:</h1>
           <select
-            className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200 dark:placeholder-gray-400 dark:focus:ring-gray-500 dark:focus:border-gray-500 homepage-sort"
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200"
+            value={selectedChain}
+            onChange={(e) => setSelectedChain(e.target.value)}
           >
-            <option value="all">All Areas</option>
-            <option value="new york">New York</option>
-            <option value="london">London</option>
-            <option value="paris">Paris</option>
-            <option value="vancouver">Vancouver</option>
-            <option value="toronto">Toronto</option>
+            <option value="all">All Hotel Chains</option>
+            {hotelChains.map((chain) => (
+              <option key={chain.id} value={chain.name}>
+                {chain.name}
+              </option>
+            ))}
           </select>
+
+          <input
+            type="number"
+            placeholder="Min Room Capacity"
+            className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200"
+            value={minCapacity || ""}
+            onChange={(e) =>
+              setMinCapacity(
+                e.target.value ? Number(e.target.value) : undefined
+              )
+            }
+            min="1"
+          />
+        </div>
+
+        <div className="flex w-full flex-wrap gap-4 mt-4 justify-center">
+          <div className="w-full md:w-1/2 max-w-md">
+            <h2 className="text-black font-medium mb-2 text-center">
+              Rating Range:
+            </h2>
+            <div className="flex gap-2 justify-center">
+              <input
+                type="number"
+                placeholder="Min Rating"
+                className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200"
+                value={minRating || ""}
+                onChange={(e) =>
+                  setMinRating(
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
+                min="0"
+                max="5"
+              />
+              <input
+                type="number"
+                placeholder="Max Rating"
+                className="border border-gray-300 text-black text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 bg-gray-200"
+                value={maxRating || ""}
+                onChange={(e) =>
+                  setMaxRating(
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
+                min="0"
+                max="5"
+              />
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/2 max-w-md">
+            <h2 className="text-black font-medium mb-2 text-center">
+              Amenities:
+            </h2>
+            <div className="flex flex-wrap gap-4 justify-center items-center">
+              <div className="flex flex-wrap gap-4 justify-center">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes("WiFi")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedAmenities([...selectedAmenities, "WiFi"]);
+                      } else {
+                        setSelectedAmenities(
+                          selectedAmenities.filter((a) => a !== "WiFi")
+                        );
+                      }
+                    }}
+                    className="rounded text-blue-500"
+                  />
+                  <span className="text-black">WiFi</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes("TV")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedAmenities([...selectedAmenities, "TV"]);
+                      } else {
+                        setSelectedAmenities(
+                          selectedAmenities.filter((a) => a !== "TV")
+                        );
+                      }
+                    }}
+                    className="rounded text-blue-500"
+                  />
+                  <span className="text-black">TV</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes("Mini Bar")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedAmenities([
+                          ...selectedAmenities,
+                          "Mini Bar",
+                        ]);
+                      } else {
+                        setSelectedAmenities(
+                          selectedAmenities.filter((a) => a !== "Mini Bar")
+                        );
+                      }
+                    }}
+                    className="rounded text-blue-500"
+                  />
+                  <span className="text-black">Mini Bar</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         {isHotelsLoading ? (
@@ -376,22 +746,25 @@ const Homepage: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {filteredHotels.length > 0 ? (
-              filteredHotels.map((hotel) => (
-                <HotelCard
-                  key={hotel.id}
-                  hotel={hotel}
-                  onClick={() => handleHotelClick(hotel)}
-                />
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-8 text-gray-500">
-                No hotels found matching your criteria. Try adjusting your
-                search.
-              </div>
-            )}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+              {filteredHotels.length > 0 ? (
+                filteredHotels.map((hotel) => (
+                  <HotelCard
+                    key={hotel.id}
+                    hotel={hotel}
+                    onClick={() => handleHotelClick(hotel)}
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-8 text-gray-500">
+                  No hotels found matching your criteria. Try adjusting your
+                  search.
+                </div>
+              )}
+            </div>
+            <Pagination />
+          </>
         )}
 
         <HotelInformation
