@@ -1,11 +1,11 @@
-#E-Hotel
+# E-Hotel
 
 E-Hotel is a **web application** built with modern web technologies to simulate and manage hotel operations.  
 It leverages **Next.js**, **Prisma ORM**, **PostgreSQL**, and **TypeScript** to provide a robust and scalable solution.
 
 ---
 
-##Tech Stack
+## Tech Stack
 - [Next.js](https://nextjs.org/) – React framework for server-side rendering and static site generation  
 - [Prisma ORM](https://www.prisma.io/) – Next-generation ORM for database management  
 - [PostgreSQL](https://www.postgresql.org/) – Reliable open-source relational database  
@@ -14,7 +14,7 @@ It leverages **Next.js**, **Prisma ORM**, **PostgreSQL**, and **TypeScript** to 
 
 ---
 
-##Screenshots
+## Screenshots
 
 ![Homepage Screenshot](https://github.com/user-attachments/assets/6a41cfa6-500c-4dac-8652-8f0dd8010ddc)
 
